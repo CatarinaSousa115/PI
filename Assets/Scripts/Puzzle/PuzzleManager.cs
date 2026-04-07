@@ -69,8 +69,15 @@ namespace Puzzle
         {
             GenerateEdges();
 
-            float w = 1f / cols;
-            float h = 1f / rows;
+            
+            float aspect = (float)paintingMaterial.mainTexture.width /
+               paintingMaterial.mainTexture.height;
+            
+            float boardWidth = 1f;
+            float boardHeight = 1f / aspect;
+
+            float w = boardWidth / cols;
+            float h = boardHeight / rows;
 
             for (int y = 0; y < rows; y++)
             {
@@ -104,7 +111,8 @@ namespace Puzzle
 
                     PuzzlePiece pp = go.AddComponent<PuzzlePiece>();
                     pp.Init(x, y, cols, rows, paintingMaterial, edgeDirs);
-                    pp.correctLocalPosition = localPos;
+                    pp.correctLocalPosition = new Vector3(x * w, y * h, 0f);
+
 
                     PuzzleDragger pd = go.AddComponent<PuzzleDragger>();
                     pd.manager = this;

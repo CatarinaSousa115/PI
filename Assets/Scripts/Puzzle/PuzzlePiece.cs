@@ -7,13 +7,14 @@ namespace Puzzle
     public class PuzzlePiece : MonoBehaviour
     {
         [HideInInspector] public int gridX, gridY, totalCols, totalRows;
-        [HideInInspector] public Vector3 correctLocalPosition; // local to the board
+        [HideInInspector] public Vector3 correctLocalPosition;
         [HideInInspector] public bool isPlaced = false;
 
-        // Bottom, Right, Top, Left — +1 tab, -1 blank, 0 flat
+        // Bottom, Right, Top, Left
         [HideInInspector] public int[] edges = new int[4];
 
         private MeshRenderer mr;
+
         private static readonly Color normalColor = Color.white;
         private static readonly Color highlightColor = new Color(1f, 1f, 0.6f);
         private static readonly Color placedColor = new Color(0.8f, 1f, 0.8f);
@@ -43,12 +44,14 @@ namespace Puzzle
             mr.material.color = placedColor;
         }
 
-        // ─── Mesh Generation ───────────────────────────────────────────────
+        // ─────────────────────────────────────────────
 
         List<Vector2> GenerateEdgePoints(Vector2 start, Vector2 end, Vector2 normal, int dir, int steps = 16)
         {
             var points = new List<Vector2>();
-            float tabHeight = (1f / Mathf.Max(totalCols, totalRows)) * 0.3f;
+
+            float tabHeight = Mathf.Min(1f / totalCols, 1f / totalRows) * 0.3f;
+
 
             for (int i = 0; i <= steps; i++)
             {
@@ -69,8 +72,14 @@ namespace Puzzle
 
         Mesh BuildMesh()
         {
-            float w = 1f / totalCols;
-            float h = 1f / totalRows;
+            Texture tex = mr.material.mainTexture;
+            float aspect = (float)tex.width / tex.height;
+
+            float boardWidth = aspect;
+            float boardHeight = 1f;
+
+            float w = boardWidth / totalCols;
+            float h = boardHeight / totalRows;
 
             Vector2 bl = new Vector2(0, 0);
             Vector2 br = new Vector2(w, 0);
@@ -85,23 +94,24 @@ namespace Puzzle
 
             Vector2 center = new Vector2(w / 2f, h / 2f);
 
-            float uMin = (float)gridX / totalCols;
-            float vMin = (float)gridY / totalRows;
-
             var verts = new List<Vector3>();
             var uvs = new List<Vector2>();
             var tris = new List<int>();
 
             verts.Add(new Vector3(center.x, center.y, 0f));
-            uvs.Add(new Vector2(uMin + 0.5f / totalCols, vMin + 0.5f / totalRows));
+            uvs.Add(new Vector2(
+                (gridX + 0.5f) / totalCols,
+                (gridY + 0.5f) / totalRows
+            ));
 
             foreach (Vector2 p in outline)
             {
                 verts.Add(new Vector3(p.x, p.y, 0f));
-                uvs.Add(new Vector2(
-                    uMin + (p.x / w) / totalCols,
-                    vMin + (p.y / h) / totalRows
-                ));
+
+                float u = (gridX + (p.x / w)) / totalCols;
+                float v = (gridY + (p.y / h)) / totalRows;
+
+                uvs.Add(new Vector2(u, v));
             }
 
             for (int i = 1; i < verts.Count - 1; i++)
@@ -117,6 +127,7 @@ namespace Puzzle
                 triangles = tris.ToArray(),
                 uv = uvs.ToArray()
             };
+
             mesh.RecalculateNormals();
             return mesh;
         }
