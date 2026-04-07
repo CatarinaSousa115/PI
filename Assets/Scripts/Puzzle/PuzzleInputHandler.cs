@@ -2,21 +2,22 @@ using UnityEngine;
 
 namespace Puzzle
 {
-    // Attach to the same GameObject as PuzzleManager.
-    // Handles all mouse/touch input for the puzzle independently
-    // of whatever input system the rest of your game uses.
     public class PuzzleInputHandler : MonoBehaviour
     {
-        [Header("Settings")]
-        public LayerMask puzzleLayer;           // assign "Puzzle" layer in Inspector
-        public Camera puzzleCamera;             // assign your camera, or leave null for Camera.main
+        public Camera puzzleCamera;
 
         private Camera cam;
         private PuzzleDragger currentDragger;
+        private PuzzleDragger lastHovered;
 
         void Start()
         {
             cam = puzzleCamera != null ? puzzleCamera : Camera.main;
+
+            if (cam == null)
+                Debug.LogError("[PuzzleInput] No camera found!");
+            else
+                Debug.Log($"[PuzzleInput] Camera ready: {cam.name}");
         }
 
         void Update()
@@ -24,7 +25,6 @@ namespace Puzzle
             if (Input.GetMouseButtonDown(0)) HandlePress();
             if (Input.GetMouseButton(0)) HandleDrag();
             if (Input.GetMouseButtonUp(0)) HandleRelease();
-
             HandleHover();
         }
 
@@ -48,8 +48,6 @@ namespace Puzzle
             currentDragger = null;
         }
 
-        PuzzleDragger lastHovered;
-
         void HandleHover()
         {
             PuzzleDragger dragger = RaycastDragger();
@@ -64,8 +62,10 @@ namespace Puzzle
 
         PuzzleDragger RaycastDragger()
         {
-            if (Physics.Raycast(GetRay(), out RaycastHit hit, 100f, puzzleLayer))
+            if (Physics.Raycast(GetRay(), out RaycastHit hit, 100f))
+            {
                 return hit.collider.GetComponent<PuzzleDragger>();
+            }
             return null;
         }
 

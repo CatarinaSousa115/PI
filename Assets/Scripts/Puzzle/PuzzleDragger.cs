@@ -6,9 +6,10 @@ namespace Puzzle
     public class PuzzleDragger : MonoBehaviour
     {
         [HideInInspector] public PuzzleManager manager;
+        [HideInInspector] public PuzzleGroup group;
 
-        public float snapDistance = 0.06f;
-        public float liftAmount = 0.05f;  // how far piece lifts off the board when dragged
+        public float snapDistance = 0.1f;
+        public float liftAmount = 0.02f;
 
         private PuzzlePiece piece;
         private Plane dragPlane;
@@ -20,24 +21,18 @@ namespace Puzzle
             piece = GetComponent<PuzzlePiece>();
         }
 
-        // Called by PuzzleInputHandler
         public void OnPickUp(Ray ray)
         {
             if (piece.isPlaced) return;
 
             isDragging = true;
 
-            // The drag plane is parallel to the board surface, at the piece's height
-            // Use the board's up direction so the puzzle works at any orientation
-            Vector3 boardUp = manager.transform.up;
-            dragPlane = new Plane(boardUp, transform.position);
+            Vector3 boardNormal = manager.transform.forward;
+            Vector3 liftedOrigin = transform.position - boardNormal * liftAmount;
+            dragPlane = new Plane(-boardNormal, liftedOrigin);
 
-            // Calculate offset so piece doesn't snap to cursor center
             if (dragPlane.Raycast(ray, out float dist))
                 dragOffset = transform.position - ray.GetPoint(dist);
-
-            // Lift piece slightly off the board
-            transform.position += boardUp * liftAmount;
         }
 
         public void OnDrag(Ray ray)
@@ -46,12 +41,18 @@ namespace Puzzle
 
             if (dragPlane.Raycast(ray, out float dist))
             {
-                Vector3 target = ray.GetPoint(dist) + dragOffset;
+                Vector3 worldPos = ray.GetPoint(dist) + dragOffset;
+                Vector3 localPos = manager.transform.InverseTransformPoint(worldPos);
+                localPos.z = -liftAmount;
+                Vector3 newPos = manager.transform.TransformPoint(localPos);
 
-                // Keep the lift — project target onto the lifted plane
-                target += manager.transform.up * liftAmount;
-                target -= manager.transform.up * liftAmount; // compensated by offset below
-                transform.position = ray.GetPoint(dist) + dragOffset + manager.transform.up * liftAmount;
+                // Move the whole group by the same delta
+                Vector3 delta = newPos - transform.position;
+
+                if (group != null)
+                    group.MoveBy(delta);
+                else
+                    transform.position = newPos;
             }
         }
 
@@ -59,20 +60,34 @@ namespace Puzzle
         {
             if (!isDragging) return;
             isDragging = false;
-
             TrySnap();
         }
 
         void TrySnap()
         {
-            // Convert correct position from board-local to world space
+            if (group != null)
+            {
+                foreach (var member in group.members)
+                    member.TrySnapSingle();
+            }
+            else
+            {
+                TrySnapSingle();
+            }
+        }
+
+        public void TrySnapSingle()
+        {
+            if (piece.isPlaced) return;
+
             Vector3 correctWorld = manager.transform.TransformPoint(piece.correctLocalPosition);
+            Vector3 localCurrent = manager.transform.InverseTransformPoint(transform.position);
+            Vector3 localCorrect = manager.transform.InverseTransformPoint(correctWorld);
 
-            // Compare only position (ignore lift axis)
-            Vector3 flatCurrent = Vector3.ProjectOnPlane(transform.position, manager.transform.up);
-            Vector3 flatCorrect = Vector3.ProjectOnPlane(correctWorld, manager.transform.up);
+            localCurrent.z = 0f;
+            localCorrect.z = 0f;
 
-            float dist = Vector3.Distance(flatCurrent, flatCorrect);
+            float dist = Vector3.Distance(localCurrent, localCorrect);
 
             if (dist <= snapDistance)
             {
@@ -80,15 +95,60 @@ namespace Puzzle
                 transform.rotation = manager.transform.rotation;
                 piece.SetPlaced();
                 manager.OnPiecePlaced();
+
+                CheckNeighbours();
             }
             else
             {
-                // Drop back onto board surface
-                Vector3 onBoard = Vector3.ProjectOnPlane(transform.position, manager.transform.up);
-                // Restore to board plane
-                float boardOffset = Vector3.Dot(manager.transform.position, manager.transform.up);
-                transform.position = onBoard + manager.transform.up * boardOffset;
+                Vector3 localPos = manager.transform.InverseTransformPoint(transform.position);
+                localPos.z = 0f;
+                transform.position = manager.transform.TransformPoint(localPos);
+            }
+        }
+
+        void CheckNeighbours()
+        {
+            Vector2Int[] directions = new Vector2Int[]
+            {
+                new Vector2Int( 1,  0),
+                new Vector2Int(-1,  0),
+                new Vector2Int( 0,  1),
+                new Vector2Int( 0, -1),
+            };
+
+            foreach (var dir in directions)
+            {
+                int nx = piece.gridX + dir.x;
+                int ny = piece.gridY + dir.y;
+
+                PuzzleDragger neighbour = manager.GetPiece(nx, ny);
+
+                if (neighbour == null) continue; 
+                if (!neighbour.piece.isPlaced) continue; 
+
+                
+                if (group == null && neighbour.group == null)
+                {
+                    PuzzleGroup newGroup = new PuzzleGroup(neighbour);
+                    newGroup.Add(this);
+                    group = newGroup;
+                    neighbour.group = newGroup;
+                }
+                else if (group == null && neighbour.group != null)
+                {
+                    neighbour.group.Add(this);
+                    group = neighbour.group;
+                }
+                else if (group != null && neighbour.group == null)
+                {
+                    group.Add(neighbour);
+                    neighbour.group = group;
+                }
+                else if (group != null && neighbour.group != null && group != neighbour.group)
+                {
+                    group.Absorb(neighbour.group);
+                }
             }
         }
     }
-}   
+}

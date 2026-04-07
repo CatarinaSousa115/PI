@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Puzzle
 {
-    [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
+    [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class PuzzlePiece : MonoBehaviour
     {
         [HideInInspector] public int gridX, gridY, totalCols, totalRows;
@@ -29,7 +29,6 @@ namespace Puzzle
 
             Mesh mesh = BuildMesh();
             GetComponent<MeshFilter>().mesh = mesh;
-            GetComponent<MeshCollider>().sharedMesh = mesh;
         }
 
         public void SetHighlight(bool on)
@@ -73,13 +72,11 @@ namespace Puzzle
             float w = 1f / totalCols;
             float h = 1f / totalRows;
 
-            // Piece corners in local space (lies flat on the XY plane)
             Vector2 bl = new Vector2(0, 0);
             Vector2 br = new Vector2(w, 0);
             Vector2 tr = new Vector2(w, h);
             Vector2 tl = new Vector2(0, h);
 
-            // Clockwise outline: Bottom → Right → Top → Left
             var outline = new List<Vector2>();
             outline.AddRange(GenerateEdgePoints(bl, br, Vector2.down, edges[0]));
             outline.AddRange(GenerateEdgePoints(br, tr, Vector2.right, edges[1]));
@@ -95,11 +92,9 @@ namespace Puzzle
             var uvs = new List<Vector2>();
             var tris = new List<int>();
 
-            // Center vertex
             verts.Add(new Vector3(center.x, center.y, 0f));
             uvs.Add(new Vector2(uMin + 0.5f / totalCols, vMin + 0.5f / totalRows));
 
-            // Outline vertices
             foreach (Vector2 p in outline)
             {
                 verts.Add(new Vector3(p.x, p.y, 0f));
@@ -109,7 +104,6 @@ namespace Puzzle
                 ));
             }
 
-            // Fan triangles
             for (int i = 1; i < verts.Count - 1; i++)
             {
                 tris.Add(0); tris.Add(i); tris.Add(i + 1);

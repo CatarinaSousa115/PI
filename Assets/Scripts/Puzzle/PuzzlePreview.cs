@@ -2,9 +2,6 @@ using UnityEngine;
 
 namespace Puzzle
 {
-    // Attach to the preview panel GameObject.
-    // Press P (or call Toggle() from anywhere in your game) to show/hide
-    // the reference image of the full painting.
     public class PuzzlePreview : MonoBehaviour
     {
         public KeyCode toggleKey = KeyCode.P;

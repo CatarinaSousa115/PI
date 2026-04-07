@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace Puzzle
 {
-    // Place this (with PuzzleInputHandler) on the PuzzleBoard GameObject.
-    // The board's Transform controls where the puzzle sits in the 3D world.
     public class PuzzleManager : MonoBehaviour
     {
         public static PuzzleManager Instance { get; private set; }
@@ -15,7 +13,7 @@ namespace Puzzle
         public Material paintingMaterial;
 
         [Header("Scatter — world positions where pieces start")]
-        public Transform scatterRoot;         // empty GameObject that defines the scatter area center
+        public Transform scatterRoot;
         public float scatterRadius = 1.5f;
 
         [Header("Events — hook these in the Inspector or via code")]
@@ -24,11 +22,11 @@ namespace Puzzle
         private int totalPieces;
         private int placedPieces;
         private readonly List<GameObject> pieces = new List<GameObject>();
+        private Dictionary<Vector2Int, PuzzleDragger> pieceMap = new Dictionary<Vector2Int, PuzzleDragger>();
+
 
         void Awake()
         {
-            // Allow other systems to reference the puzzle manager
-            // without assuming it's a global singleton
             if (Instance == null) Instance = this;
         }
 
@@ -42,13 +40,14 @@ namespace Puzzle
             totalPieces = cols * rows;
             GenerateAndSpawn();
             Scatter();
+            Physics.SyncTransforms();
             PuzzleUI.Instance?.UpdateCounter(placedPieces, totalPieces);
         }
 
         // ─── Edge Generation ───────────────────────────────────────────────
 
-        int[,] hEdges; // [col-border index, row] — between columns
-        int[,] vEdges; // [col, row-border index] — between rows
+        int[,] hEdges;
+        int[,] vEdges;
 
         void GenerateEdges()
         {
@@ -70,6 +69,9 @@ namespace Puzzle
         {
             GenerateEdges();
 
+            float w = 1f / cols;
+            float h = 1f / rows;
+
             for (int y = 0; y < rows; y++)
             {
                 for (int x = 0; x < cols; x++)
@@ -82,24 +84,23 @@ namespace Puzzle
                         (x == 0)        ? 0 : -hEdges[x - 1, y],  // Left
                     };
 
-                    // Correct local position on the board (0→1 range)
                     Vector3 localPos = new Vector3(
-                        x * (1f / cols),
-                        y * (1f / rows),
+                        x * w,
+                        y * h,
                         0f
                     );
 
                     GameObject go = new GameObject($"Piece_{x}_{y}");
-                    go.layer = LayerMask.NameToLayer("Puzzle");
-
-                    // Parent to this board so it inherits position/rotation
                     go.transform.SetParent(transform, worldPositionStays: false);
                     go.transform.localPosition = localPos;
                     go.transform.localRotation = Quaternion.identity;
 
                     go.AddComponent<MeshFilter>();
                     go.AddComponent<MeshRenderer>();
-                    go.AddComponent<MeshCollider>();
+
+                    BoxCollider box = go.AddComponent<BoxCollider>();
+                    box.size = new Vector3(w, h, 0.01f);
+                    box.center = new Vector3(w / 2f, h / 2f, 0f);
 
                     PuzzlePiece pp = go.AddComponent<PuzzlePiece>();
                     pp.Init(x, y, cols, rows, paintingMaterial, edgeDirs);
@@ -107,6 +108,8 @@ namespace Puzzle
 
                     PuzzleDragger pd = go.AddComponent<PuzzleDragger>();
                     pd.manager = this;
+
+                    pieceMap[new Vector2Int(x, y)] = pd;
 
                     pieces.Add(go);
                 }
@@ -144,25 +147,30 @@ namespace Puzzle
             }
         }
 
-        // ─── Public API (call from other systems) ─────────────────────────
+        // ─── Public API ────────────────────────────────────────────────────
 
         float startTime;
-
         void OnEnable() => startTime = Time.time;
-
         public float GetElapsedTime() => Time.time - startTime;
 
-        // Call this from your game to reset/restart the puzzle
         public void RestartPuzzle()
         {
             foreach (GameObject p in pieces)
                 Destroy(p);
             pieces.Clear();
+            pieceMap.Clear();
             placedPieces = 0;
 
             GenerateAndSpawn();
             Scatter();
+            Physics.SyncTransforms();
             PuzzleUI.Instance?.UpdateCounter(placedPieces, totalPieces);
+        }
+    
+        public PuzzleDragger GetPiece(int x, int y)
+        {
+            pieceMap.TryGetValue(new Vector2Int(x, y), out PuzzleDragger dragger);
+            return dragger;
         }
     }
 }

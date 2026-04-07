@@ -3,8 +3,6 @@ using UnityEngine.UI;
 
 namespace Puzzle
 {
-    // Attach to a Canvas that belongs to the puzzle scene/area.
-    // Completely separate from any other UI in your game.
     public class PuzzleUI : MonoBehaviour
     {
         public static PuzzleUI Instance { get; private set; }
@@ -17,10 +15,10 @@ namespace Puzzle
         public GameObject victoryPanel;
         public Text victoryTimeText;
         public Button playAgainButton;
-        public Button exitButton;          // returns to your main game
+        public Button exitButton;          
 
         [Header("Events")]
-        public UnityEngine.Events.UnityEvent onExit;  // hook to your game's scene loader
+        public UnityEngine.Events.UnityEvent onExit;  
 
         private float elapsed;
         private bool running;
@@ -72,8 +70,7 @@ namespace Puzzle
             PuzzleManager.Instance?.RestartPuzzle();
         }
 
-        void OnExit() => onExit?.Invoke();  // your game handles scene transition
-
+        void OnExit() => onExit?.Invoke();  
         string FormatTime(float t)
         {
             int m = (int)(t / 60);
