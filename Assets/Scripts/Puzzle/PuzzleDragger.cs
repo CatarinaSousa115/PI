@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Puzzle
 {
@@ -8,7 +9,7 @@ namespace Puzzle
         [HideInInspector] public PuzzleManager manager;
         [HideInInspector] public PuzzleGroup group;
 
-        public float snapDistance = 0.1f;
+        public float snapDistance = 0.15f;
         public float liftAmount = 0.02f;
 
         private PuzzlePiece piece;
@@ -21,9 +22,13 @@ namespace Puzzle
             piece = GetComponent<PuzzlePiece>();
         }
 
+        // ─── PICKUP ─────────────────────────────────────────────
+
         public void OnPickUp(Ray ray)
         {
-            if (piece.isPlaced) return;
+            // Allow dragging if part of a group
+            if (piece.isPlaced && group == null)
+                return;
 
             isDragging = true;
 
@@ -35,6 +40,8 @@ namespace Puzzle
                 dragOffset = transform.position - ray.GetPoint(dist);
         }
 
+        // ─── DRAG ───────────────────────────────────────────────
+
         public void OnDrag(Ray ray)
         {
             if (!isDragging) return;
@@ -44,9 +51,8 @@ namespace Puzzle
                 Vector3 worldPos = ray.GetPoint(dist) + dragOffset;
                 Vector3 localPos = manager.transform.InverseTransformPoint(worldPos);
                 localPos.z = -liftAmount;
-                Vector3 newPos = manager.transform.TransformPoint(localPos);
 
-                // Move the whole group by the same delta
+                Vector3 newPos = manager.transform.TransformPoint(localPos);
                 Vector3 delta = newPos - transform.position;
 
                 if (group != null)
@@ -56,12 +62,18 @@ namespace Puzzle
             }
         }
 
+        // ─── RELEASE ────────────────────────────────────────────
+
         public void OnRelease()
         {
             if (!isDragging) return;
             isDragging = false;
-            TrySnap();
+
+            TrySnapToNeighbours(); 
+            TrySnap();             
         }
+
+        // ─── SNAP TO BOARD ──────────────────────────────────────
 
         void TrySnap()
         {
@@ -81,6 +93,7 @@ namespace Puzzle
             if (piece.isPlaced) return;
 
             Vector3 correctWorld = manager.transform.TransformPoint(piece.correctLocalPosition);
+
             Vector3 localCurrent = manager.transform.InverseTransformPoint(transform.position);
             Vector3 localCorrect = manager.transform.InverseTransformPoint(correctWorld);
 
@@ -93,6 +106,7 @@ namespace Puzzle
             {
                 transform.position = correctWorld;
                 transform.rotation = manager.transform.rotation;
+
                 piece.SetPlaced();
                 manager.OnPiecePlaced();
 
@@ -105,6 +119,8 @@ namespace Puzzle
                 transform.position = manager.transform.TransformPoint(localPos);
             }
         }
+
+        // ─── GROUP MERGING AFTER PLACED ─────────────────────────
 
         void CheckNeighbours()
         {
@@ -123,31 +139,87 @@ namespace Puzzle
 
                 PuzzleDragger neighbour = manager.GetPiece(nx, ny);
 
-                if (neighbour == null) continue; 
-                if (!neighbour.piece.isPlaced) continue; 
+                if (neighbour == null) continue;
+                if (!neighbour.piece.isPlaced) continue;
 
-                
-                if (group == null && neighbour.group == null)
+                MergeWith(neighbour);
+            }
+        }
+
+        // ─── PIECE-TO-PIECE SNAP ────────────────────────────────
+
+        void TrySnapToNeighbours()
+        {
+            Vector2Int[] directions = new Vector2Int[]
+            {
+        new Vector2Int( 1,  0),
+        new Vector2Int(-1,  0),
+        new Vector2Int( 0,  1),
+        new Vector2Int( 0, -1),
+            };
+
+            foreach (var dir in directions)
+            {
+                int nx = piece.gridX + dir.x;
+                int ny = piece.gridY + dir.y;
+
+                PuzzleDragger neighbour = manager.GetPiece(nx, ny);
+                if (neighbour == null) continue;
+
+                if (group != null && neighbour.group == group) continue;
+
+                Vector3 myCorrectWorld =
+                    manager.transform.TransformPoint(piece.correctLocalPosition);
+
+                Vector3 neighbourCorrectWorld =
+                    manager.transform.TransformPoint(neighbour.piece.correctLocalPosition);
+
+                Vector3 targetWorldPos =
+                    neighbour.transform.position - (neighbourCorrectWorld - myCorrectWorld);
+
+                Vector3 delta = targetWorldPos - transform.position;
+                delta.z = 0f;
+
+                float dist = delta.magnitude;
+
+                if (dist <= snapDistance)
                 {
-                    PuzzleGroup newGroup = new PuzzleGroup(neighbour);
-                    newGroup.Add(this);
-                    group = newGroup;
-                    neighbour.group = newGroup;
+                    if (group != null)
+                        group.MoveBy(delta);
+                    else
+                        transform.position += delta;
+
+                    MergeWith(neighbour);
+                    return;
                 }
-                else if (group == null && neighbour.group != null)
-                {
-                    neighbour.group.Add(this);
-                    group = neighbour.group;
-                }
-                else if (group != null && neighbour.group == null)
-                {
-                    group.Add(neighbour);
-                    neighbour.group = group;
-                }
-                else if (group != null && neighbour.group != null && group != neighbour.group)
-                {
-                    group.Absorb(neighbour.group);
-                }
+            }
+        }
+
+        // ─── GROUP MERGE LOGIC ──────────────────────────────────
+
+        void MergeWith(PuzzleDragger neighbour)
+        {
+            if (group == null && neighbour.group == null)
+            {
+                PuzzleGroup newGroup = new PuzzleGroup(this);
+                newGroup.Add(neighbour);
+
+                group = newGroup;
+                neighbour.group = newGroup;
+            }
+            else if (group == null)
+            {
+                neighbour.group.Add(this);
+                group = neighbour.group;
+            }
+            else if (neighbour.group == null)
+            {
+                group.Add(neighbour);
+                neighbour.group = group;
+            }
+            else if (group != neighbour.group)
+            {
+                group.Absorb(neighbour.group);
             }
         }
     }
