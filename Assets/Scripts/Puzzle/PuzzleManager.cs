@@ -105,12 +105,14 @@ namespace Puzzle
                     go.AddComponent<MeshFilter>();
                     go.AddComponent<MeshRenderer>();
 
+
+                    float tabSize = Mathf.Min(w, h) * 0.3f;
                     BoxCollider box = go.AddComponent<BoxCollider>();
-                    box.size = new Vector3(w, h, 0.01f);
+                    box.size = new Vector3(w + tabSize * 2f, h + tabSize * 2f, 0.01f);
                     box.center = new Vector3(w / 2f, h / 2f, 0f);
 
                     PuzzlePiece pp = go.AddComponent<PuzzlePiece>();
-                    pp.Init(x, y, cols, rows, paintingMaterial, edgeDirs);
+                    pp.Init(x, y, cols, rows, paintingMaterial, edgeDirs, w, h);
                     pp.correctLocalPosition = new Vector3(x * w, y * h, 0f);
 
 

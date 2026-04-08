@@ -26,9 +26,7 @@ namespace Puzzle
 
         public void OnPickUp(Ray ray)
         {
-            // Allow dragging if part of a group
-            if (piece.isPlaced && group == null)
-                return;
+            if (piece.isPlaced && group == null) return;
 
             isDragging = true;
 
@@ -69,8 +67,8 @@ namespace Puzzle
             if (!isDragging) return;
             isDragging = false;
 
-            TrySnapToNeighbours(); 
-            TrySnap();             
+            TrySnapToNeighbours();
+            TrySnap();
         }
 
         // ─── SNAP TO BOARD ──────────────────────────────────────
@@ -79,7 +77,8 @@ namespace Puzzle
         {
             if (group != null)
             {
-                foreach (var member in group.members)
+                // Iterate over a copy so CheckNeighbours doesn't mutate the list mid-loop
+                foreach (var member in new List<PuzzleDragger>(group.members))
                     member.TrySnapSingle();
             }
             else
@@ -106,14 +105,13 @@ namespace Puzzle
             {
                 transform.position = correctWorld;
                 transform.rotation = manager.transform.rotation;
-
                 piece.SetPlaced();
                 manager.OnPiecePlaced();
-
                 CheckNeighbours();
             }
             else
             {
+                // Drop flush to board surface
                 Vector3 localPos = manager.transform.InverseTransformPoint(transform.position);
                 localPos.z = 0f;
                 transform.position = manager.transform.TransformPoint(localPos);
@@ -124,7 +122,28 @@ namespace Puzzle
 
         void CheckNeighbours()
         {
-            Vector2Int[] directions = new Vector2Int[]
+            var directions = new Vector2Int[]
+            {
+                new Vector2Int( 1,  0),
+                new Vector2Int(-1,  0),
+                new Vector2Int( 0,  1),
+                new Vector2Int( 0, -1),
+            };
+
+            foreach (var dir in directions)
+            {
+                PuzzleDragger neighbour = manager.GetPiece(piece.gridX + dir.x, piece.gridY + dir.y);
+                if (neighbour == null) continue;
+                if (!neighbour.piece.isPlaced) continue;
+                MergeWith(neighbour);
+            }
+        }
+
+        // ─── PIECE-TO-PIECE SNAP ────────────────────────────────
+
+        void TrySnapToNeighbours()
+        {
+            var directions = new Vector2Int[]
             {
                 new Vector2Int( 1,  0),
                 new Vector2Int(-1,  0),
@@ -138,52 +157,27 @@ namespace Puzzle
                 int ny = piece.gridY + dir.y;
 
                 PuzzleDragger neighbour = manager.GetPiece(nx, ny);
-
                 if (neighbour == null) continue;
-                if (!neighbour.piece.isPlaced) continue;
-
-                MergeWith(neighbour);
-            }
-        }
-
-        // ─── PIECE-TO-PIECE SNAP ────────────────────────────────
-
-        void TrySnapToNeighbours()
-        {
-            Vector2Int[] directions = new Vector2Int[]
-            {
-        new Vector2Int( 1,  0),
-        new Vector2Int(-1,  0),
-        new Vector2Int( 0,  1),
-        new Vector2Int( 0, -1),
-            };
-
-            foreach (var dir in directions)
-            {
-                int nx = piece.gridX + dir.x;
-                int ny = piece.gridY + dir.y;
-
-                PuzzleDragger neighbour = manager.GetPiece(nx, ny);
-                if (neighbour == null) continue;
-
                 if (group != null && neighbour.group == group) continue;
 
-                Vector3 myCorrectWorld =
-                    manager.transform.TransformPoint(piece.correctLocalPosition);
+                Vector3 myLocalPos = manager.transform.InverseTransformPoint(transform.position);
+                Vector3 neighbourLocalPos = manager.transform.InverseTransformPoint(neighbour.transform.position);
 
-                Vector3 neighbourCorrectWorld =
-                    manager.transform.TransformPoint(neighbour.piece.correctLocalPosition);
+                Vector3 expectedLocalPos = neighbourLocalPos
+                    + (piece.correctLocalPosition - neighbour.piece.correctLocalPosition);
 
-                Vector3 targetWorldPos =
-                    neighbour.transform.position - (neighbourCorrectWorld - myCorrectWorld);
+                Vector2 myXY = new Vector2(myLocalPos.x, myLocalPos.y);
+                Vector2 expectedXY = new Vector2(expectedLocalPos.x, expectedLocalPos.y);
 
-                Vector3 delta = targetWorldPos - transform.position;
-                delta.z = 0f;
-
-                float dist = delta.magnitude;
+                float dist = Vector2.Distance(myXY, expectedXY);
 
                 if (dist <= snapDistance)
                 {
+                    Vector3 targetLocalPos = expectedLocalPos;
+                    targetLocalPos.z = myLocalPos.z; 
+                    Vector3 targetWorldPos = manager.transform.TransformPoint(targetLocalPos);
+                    Vector3 delta = targetWorldPos - transform.position;
+
                     if (group != null)
                         group.MoveBy(delta);
                     else
@@ -203,7 +197,6 @@ namespace Puzzle
             {
                 PuzzleGroup newGroup = new PuzzleGroup(this);
                 newGroup.Add(neighbour);
-
                 group = newGroup;
                 neighbour.group = newGroup;
             }
