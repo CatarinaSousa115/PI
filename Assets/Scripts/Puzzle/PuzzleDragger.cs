@@ -31,7 +31,8 @@ namespace Puzzle
             isDragging = true;
 
             Vector3 boardNormal = manager.transform.forward;
-            Vector3 liftedOrigin = transform.position - boardNormal * liftAmount;
+            float surfaceZ = manager != null ? manager.pieceSurfaceOffset : 0f;
+            Vector3 liftedOrigin = manager.transform.TransformPoint(new Vector3(0f, 0f, surfaceZ + liftAmount));
             dragPlane = new Plane(-boardNormal, liftedOrigin);
 
             if (dragPlane.Raycast(ray, out float dist))
@@ -48,7 +49,7 @@ namespace Puzzle
             {
                 Vector3 worldPos = ray.GetPoint(dist) + dragOffset;
                 Vector3 localPos = manager.transform.InverseTransformPoint(worldPos);
-                localPos.z = -liftAmount;
+                localPos.z = manager.pieceSurfaceOffset + liftAmount;
 
                 Vector3 newPos = manager.transform.TransformPoint(localPos);
                 Vector3 delta = newPos - transform.position;
@@ -96,8 +97,8 @@ namespace Puzzle
             Vector3 localCurrent = manager.transform.InverseTransformPoint(transform.position);
             Vector3 localCorrect = manager.transform.InverseTransformPoint(correctWorld);
 
-            localCurrent.z = 0f;
-            localCorrect.z = 0f;
+            localCurrent.z = manager.pieceSurfaceOffset;
+            localCorrect.z = manager.pieceSurfaceOffset;
 
             float dist = Vector3.Distance(localCurrent, localCorrect);
 
@@ -113,7 +114,7 @@ namespace Puzzle
             {
                 // Drop flush to board surface
                 Vector3 localPos = manager.transform.InverseTransformPoint(transform.position);
-                localPos.z = 0f;
+                localPos.z = manager.pieceSurfaceOffset;
                 transform.position = manager.transform.TransformPoint(localPos);
             }
         }

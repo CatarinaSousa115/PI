@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using MuseumGame;
 
 namespace Puzzle
 {
@@ -11,13 +12,27 @@ namespace Puzzle
         public int cols = 4;
         public int rows = 4;
         public Material paintingMaterial;
+        public float boardWidth = 1f;
+        public float pieceSurfaceOffset = 0.03f;
 
         [Header("Scatter — world positions where pieces start")]
         public Transform scatterRoot;
         public float scatterRadius = 1.5f;
+        public bool autoPositionScatterRoot = true;
+        public float scatterPadding = 0.35f;
 
         [Header("Events — hook these in the Inspector or via code")]
         public UnityEngine.Events.UnityEvent onPuzzleComplete;
+
+        [Header("Museum Flow")]
+        public MuseumRoom linkedRoom;
+        [TextArea(2, 4)]
+        public string completedObjective = "A sala foi restaurada. A primeira placa foi recuperada.";
+        public string completionStatus = "Primeira placa recuperada.";
+
+        [Header("Legacy UI")]
+        public bool hideLegacyCanvasOnStart = true;
+        public string legacyCanvasName = "PuzzleCanvas";
 
         private int totalPieces;
         private int placedPieces;
@@ -38,6 +53,9 @@ namespace Puzzle
         void Start()
         {
             totalPieces = cols * rows;
+            ResolveLinkedRoom();
+            HideLegacyCanvas();
+            ConfigureScatterRoot();
             GenerateAndSpawn();
             Scatter();
             Physics.SyncTransforms();
@@ -67,14 +85,19 @@ namespace Puzzle
 
         void GenerateAndSpawn()
         {
+            if (paintingMaterial == null || paintingMaterial.mainTexture == null)
+            {
+                Debug.LogError("[PuzzleManager] Assign a material with a texture before generating the puzzle.");
+                return;
+            }
+
             GenerateEdges();
 
             
             float aspect = (float)paintingMaterial.mainTexture.width /
                paintingMaterial.mainTexture.height;
             
-            float boardWidth = 1f;
-            float boardHeight = 1f / aspect;
+            float boardHeight = boardWidth / aspect;
 
             float w = boardWidth / cols;
             float h = boardHeight / rows;
@@ -94,7 +117,7 @@ namespace Puzzle
                     Vector3 localPos = new Vector3(
                         x * w,
                         y * h,
-                        0f
+                        pieceSurfaceOffset
                     );
 
                     GameObject go = new GameObject($"Piece_{x}_{y}");
@@ -113,7 +136,7 @@ namespace Puzzle
 
                     PuzzlePiece pp = go.AddComponent<PuzzlePiece>();
                     pp.Init(x, y, cols, rows, paintingMaterial, edgeDirs, w, h);
-                    pp.correctLocalPosition = new Vector3(x * w, y * h, 0f);
+                    pp.correctLocalPosition = new Vector3(x * w, y * h, pieceSurfaceOffset);
 
 
                     PuzzleDragger pd = go.AddComponent<PuzzleDragger>();
@@ -153,6 +176,10 @@ namespace Puzzle
             if (placedPieces >= totalPieces)
             {
                 PuzzleUI.Instance?.ShowVictory(GetElapsedTime());
+                if (MuseumGameManager.Instance != null && !string.IsNullOrWhiteSpace(completedObjective))
+                    MuseumGameManager.Instance.SetObjective(completedObjective);
+                MuseumHud.Instance?.SetStatus(completionStatus);
+                linkedRoom?.MarkComplete();
                 onPuzzleComplete?.Invoke();
             }
         }
@@ -165,6 +192,10 @@ namespace Puzzle
 
         public void RestartPuzzle()
         {
+            startTime = Time.time;
+            HideLegacyCanvas();
+            ConfigureScatterRoot();
+
             foreach (GameObject p in pieces)
                 Destroy(p);
             pieces.Clear();
@@ -181,6 +212,46 @@ namespace Puzzle
         {
             pieceMap.TryGetValue(new Vector2Int(x, y), out PuzzleDragger dragger);
             return dragger;
+        }
+
+        private void ResolveLinkedRoom()
+        {
+            if (linkedRoom != null)
+                return;
+
+            MuseumRoom[] rooms = FindObjectsByType<MuseumRoom>(FindObjectsSortMode.None);
+            foreach (MuseumRoom room in rooms)
+            {
+                if (room.roomId == MuseumRoomId.Reconstruction)
+                {
+                    linkedRoom = room;
+                    return;
+                }
+            }
+        }
+
+        private void HideLegacyCanvas()
+        {
+            if (!hideLegacyCanvasOnStart)
+                return;
+
+            Transform legacyCanvas = transform.Find(legacyCanvasName);
+            if (legacyCanvas != null)
+                legacyCanvas.gameObject.SetActive(false);
+        }
+
+        private void ConfigureScatterRoot()
+        {
+            if (!autoPositionScatterRoot || scatterRoot == null || paintingMaterial == null || paintingMaterial.mainTexture == null)
+                return;
+
+            float aspect = (float)paintingMaterial.mainTexture.width / paintingMaterial.mainTexture.height;
+            float boardHeight = boardWidth / aspect;
+
+            scatterRoot.localPosition = new Vector3(
+                boardWidth + scatterPadding,
+                boardHeight * 0.5f,
+                0f);
         }
     }
 }
