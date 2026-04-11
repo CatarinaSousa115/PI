@@ -7,9 +7,11 @@ Shader "Custom/DoubleSidedUnlit"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
-        
-        Cull Off  // ← this is the only important line, renders both faces
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
+
+        Cull Off
+        ZWrite Off
+        Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {

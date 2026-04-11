@@ -11,14 +11,11 @@ namespace Puzzle
         public Text timerText;
         public Text counterText;
 
-        [Header("Victory Panel")]
-        public GameObject victoryPanel;
-        public Text victoryTimeText;
-        public Button playAgainButton;
-        public Button exitButton;          
+        [Header("Completion")]
+        public Text completionText; // simple text, hidden by default
 
         [Header("Events")]
-        public UnityEngine.Events.UnityEvent onExit;  
+        public UnityEngine.Events.UnityEvent onExit;
 
         private float elapsed;
         private bool running;
@@ -26,14 +23,12 @@ namespace Puzzle
         void Awake()
         {
             Instance = this;
-            if (victoryPanel) victoryPanel.SetActive(false);
+            if (completionText) completionText.gameObject.SetActive(false);
         }
 
         void Start()
         {
             running = true;
-            if (playAgainButton) playAgainButton.onClick.AddListener(OnPlayAgain);
-            if (exitButton) exitButton.onClick.AddListener(OnExit);
         }
 
         void OnDestroy()
@@ -45,8 +40,7 @@ namespace Puzzle
         {
             if (!running) return;
             elapsed += Time.deltaTime;
-            if (timerText)
-                timerText.text = FormatTime(elapsed);
+            if (timerText) timerText.text = FormatTime(elapsed);
         }
 
         public void UpdateCounter(int placed, int total)
@@ -58,19 +52,14 @@ namespace Puzzle
         public void ShowVictory(float time)
         {
             running = false;
-            if (victoryPanel) victoryPanel.SetActive(true);
-            if (victoryTimeText) victoryTimeText.text = $"Completed in {FormatTime(time)}";
+
+            if (completionText)
+            {
+                completionText.gameObject.SetActive(true);
+                completionText.text = $"Puzzle Complete!\n{FormatTime(time)}";
+            }
         }
 
-        void OnPlayAgain()
-        {
-            elapsed = 0f;
-            running = true;
-            if (victoryPanel) victoryPanel.SetActive(false);
-            PuzzleManager.Instance?.RestartPuzzle();
-        }
-
-        void OnExit() => onExit?.Invoke();  
         string FormatTime(float t)
         {
             int m = (int)(t / 60);
