@@ -176,7 +176,7 @@ namespace MuseumGame.Narrative
 
             if (introDialogue == null)
             {
-                GameObject quadro = GameObject.Find("QuadroDomPedro");
+                GameObject quadro = GameObject.Find("DPedro");
                 if (quadro != null)
                 {
                     introDialogue = quadro.GetComponent<SimpleDialogueTrigger>();
