@@ -446,8 +446,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 62996208}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.0000004582107, y: 0, z: 5.0000005}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1928,6 +1928,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 532616076}
+  - component: {fileID: 532616077}
   m_Layer: 0
   m_Name: Sala 2 - 1.2
   m_TagString: Untagged
@@ -1956,9 +1957,31 @@ Transform:
   - {fileID: 778362018}
   - {fileID: 407291126}
   - {fileID: 1560701988}
-  - {fileID: 959195703}
   m_Father: {fileID: 352548910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &532616077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532616075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5895dd7e81df54770b4bc697c69eecbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.MuseumRoom
+  roomId: 2
+  roomObjective: Segue para a Sala da Reconstrucao e resolve o puzzle para recuperar
+    a primeira placa.
+  activateOnStart: 0
+  awardsPlaqueOnComplete: 1
+  onRoomActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  onRoomCompleted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &561982336
 GameObject:
   m_ObjectHideFlags: 0
@@ -3493,14 +3516,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 959195702}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.2, z: 0.2}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 3.46, y: 0, z: -0}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 62996209}
   - {fileID: 1352611696}
-  m_Father: {fileID: 532616076}
+  m_Father: {fileID: 1907633850}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &959195704
 MonoBehaviour:
@@ -3522,7 +3545,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 959195702}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e4bbb420c6a043ed986f75a5e67db2c9, type: 3}
   m_Name: 
@@ -3530,13 +3553,21 @@ MonoBehaviour:
   cols: 3
   rows: 3
   paintingMaterial: {fileID: 2100000, guid: cf5e53558d82151778639ab87fc96e0e, type: 2}
+  boardWidth: 0.95
+  pieceSurfaceOffset: 0.03
   scatterRoot: {fileID: 62996209}
-  scatterRadius: 1
+  scatterRadius: 0.32
+  autoPositionScatterRoot: 0
+  scatterPadding: 0.35
   onPuzzleComplete:
     m_PersistentCalls:
       m_Calls: []
-  linkedRoom: {fileID: 0}
-  completedObjective: A sala foi restaurada. A primeira placa foi recuperada.
+  linkedRoom: {fileID: 532616077}
+  completedObjective: A primeira placa foi recuperada. A proxima sala sera adicionada
+    em seguida.
+  completionStatus: Sala 2 concluida. Primeira placa recuperada.
+  hideLegacyCanvasOnStart: 1
+  legacyCanvasName: PuzzleCanvas
 --- !u!1 &972783357
 GameObject:
   m_ObjectHideFlags: 0
@@ -4205,9 +4236,9 @@ GameObject:
   - component: {fileID: 1191661603}
   - component: {fileID: 1191661602}
   - component: {fileID: 1191661601}
-  - component: {fileID: 1191661600}
   - component: {fileID: 1191661599}
   - component: {fileID: 1191661598}
+  - component: {fileID: 1191661604}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -4253,36 +4284,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1.8
-  m_Radius: 0.3
+  m_Height: 1.65
+  m_Radius: 0.2
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_StepOffset: 0.35
+  m_SkinWidth: 0.03
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.9, z: 0}
---- !u!136 &1191661600
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1191661597}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.3
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.825, z: 0}
 --- !u!23 &1191661601
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4349,13 +4357,43 @@ Transform:
   m_GameObject: {fileID: 1191661597}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 1, z: 4}
+  m_LocalPosition: {x: 4.631, y: 1, z: 4.567}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1399266328}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1191661604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191661597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9227f425dd4a5479d9553e6631bab815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.Player.DebugRoomTeleporter
+  lobbyPoint: {fileID: 0}
+  room2Point: {fileID: 0}
+  room3Point: {fileID: 0}
+  room4Point: {fileID: 0}
+  room5Point: {fileID: 0}
+  lobbyKey: 49
+  room2Key: 50
+  room3Key: 51
+  room4Key: 52
+  room5Key: 53
+  characterController: {fileID: 0}
+  verticalOffset: 0.1
+  autoResolveMarkers: 1
+  lobbyMarkerName: Lobby 1.1 Marker
+  room2MarkerName: Sala 2 - 1.2 Marker
+  room3MarkerName: Sala 3 - 1.3 Marker
+  room4MarkerName: Sala 4 - 1.5 Marker
+  room5MarkerName: Sala 5 - 1.13 Marker
 --- !u!1 &1254938828
 GameObject:
   m_ObjectHideFlags: 0
@@ -5614,7 +5652,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: New Text
+  m_Text: Fala com Dom Pedro para receber a missao inicial.
 --- !u!222 &1561855814
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5744,8 +5782,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 0.98954433, z: 1}
+  m_Center: {x: 0, y: -0.005227834, z: 0}
 --- !u!33 &1567498208
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -5785,6 +5823,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.MuseumRoom
   roomId: 1
   roomObjective: Conclui o desafio desta sala para recuperar a placa perdida.
+  activateOnStart: 1
   awardsPlaqueOnComplete: 0
   onRoomActivated:
     m_PersistentCalls:
@@ -6881,6 +6920,7 @@ GameObject:
   - component: {fileID: 1901093284}
   - component: {fileID: 1901093289}
   - component: {fileID: 1901093288}
+  - component: {fileID: 1901093290}
   m_Layer: 0
   m_Name: QuadroDomPedro
   m_TagString: Untagged
@@ -7035,6 +7075,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0000002, y: 1, z: 6.123235e-17}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1901093290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901093283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc3cf328d112a485d9168bf4611a80f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.Narrative.PaintingFrameMarker
+  frameRootName: FrameMarker
+  depthOffset: 0.03
+  borderThickness: 0.08
+  borderDepth: 0.04
+  frameColor: {r: 0.36, g: 0.22, b: 0.08, a: 1}
 --- !u!1 &1902020019
 GameObject:
   m_ObjectHideFlags: 0
@@ -7178,7 +7235,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.4, z: 4}
   m_LocalScale: {x: 0.15, y: 2.8, z: 2.6}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 959195703}
   m_Father: {fileID: 532616076}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &1907633851
@@ -7441,37 +7499,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32babc4150120456b95aebaab878019a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.Narrative.LobbyIntroController
-  lobbyRoom: {fileID: 0}
-  introDialogue: {fileID: 0}
+  lobbyRoom: {fileID: 1616362047}
+  introDialogue: {fileID: 1901093288}
   firstPortal: {fileID: 0}
-  hud: {fileID: 0}
-  introObjective: "Fala com Dom Pedro para descobrires o que aconteceu \xE0s placas desaparecidas."
-  afterIntroObjective: Segue para a Sala da Reconstrucao e recupera a primeira
-    placa perdida.
+  hud: {fileID: 439062741}
+  introObjective: "Fala com Dom Pedro para descobrires o que aconteceu \xE0s placas
+    desaparecidas."
+  afterIntroObjective: Segue para a Sala da Reconstrucao e recupera a primeira placa
+    perdida.
   lockedPortalMessage: Fala com Dom Pedro para receber a missao inicial.
   readyPortalMessage: Segue para a Sala 2 e resolve o puzzle.
   room2RootName: Sala 2 - 1.2
   room2MarkerName: Sala 2 - 1.2 Marker
   room2Objective: Segue para a Sala da Reconstrucao e resolve o puzzle para recuperar
     a primeira placa.
-  room2CompletedObjective: A primeira placa foi recuperada. A proxima sala sera
-    adicionada em seguida.
+  room2CompletedObjective: A primeira placa foi recuperada. A proxima sala sera adicionada
+    em seguida.
   room2ReadyStatus: Segue para a Sala 2 e resolve o puzzle.
   room2CompletedStatus: Sala 2 concluida. Primeira placa recuperada.
   puzzleBoardName: PuzzleBoard_Sala2
   legacyPuzzleCanvasName: PuzzleCanvas
   room2PuzzleWallName: WestWall
-  puzzleBoardPositionOffset: {x: 0.12, y: 0, z: 0}
+  autoPlaceRoom2DisplayOnPlay: 0
+  room2PuzzleLocalPosition: {x: 0, y: -0.525, z: -0.02}
   puzzleBoardEulerAngles: {x: 0, y: 90, z: 0}
   puzzleBoardScale: {x: 1, y: 1, z: 1}
   puzzleBoardWidth: 0.95
   puzzleScatterRadius: 0.32
+  puzzleScatterDistanceFromWall: 0.75
   openPassageToRoom2: 1
   lobbyBlockoutName: Lobby 1.1
-  lobbyBlockingWallName: WestWall
-  lobbyDoorMarkerName: To 1.2
-  room2BlockingWallName: EastWall
-  room2DoorMarkerName: To 1.1
+  lobbySpawnMarkerName: Lobby 1.1 Marker
+  lobbyDoorLeafName: To 1.2_Leaf
+  room2DoorLeafName: To 1.1_Leaf
+  playerName: Player
+  playerSpawnHeight: 1
   resetProgressOnStart: 1
   startDialogueAutomatically: 0
   onIntroStarted:
@@ -7492,9 +7554,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12a95cac707430e8973e305e7b91f61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.Blockout.MuseumWhiteboxRuntimeLayout
-  wallHeight: 2.8
-  wallThickness: 0.15
-  floorThickness: 0.1
+  wallHeight: 2.1
+  wallThickness: 0.1
+  floorThickness: 0
   rooms: []
   lobbyRoomName: Lobby 1.1
   lobbyWallName: WestWall
@@ -7503,6 +7565,14 @@ MonoBehaviour:
   room2WallName: EastWall
   room2DoorName: To 1.1
   doorwayHeight: 2.1
+  doorwayLintelHeight: 0.28
+  closedDoorThickness: 0.18
+  doorLeafPlaneOffset: 0
+  doorwayClearancePadding: 0.35
+  doorwayGroundClearance: 0.08
+  minimumDoorwayWidth: 1.15
+  minimumDoorwayHeight: 2.3
+  doorColor: {r: 0.82, g: 0.82, b: 0.86, a: 1}
   domPedroName: QuadroDomPedro
   lobbyMarkerName: Lobby 1.1 Marker
   room2MarkerName: Sala 2 - 1.2 Marker
