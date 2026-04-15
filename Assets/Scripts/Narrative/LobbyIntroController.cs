@@ -178,13 +178,27 @@ namespace MuseumGame.Narrative
             {
                 GameObject quadro = GameObject.Find("DPedro");
                 if (quadro != null)
-                {
                     introDialogue = quadro.GetComponentInChildren<SimpleDialogueTrigger>();
+
+                if (introDialogue == null)
+                {
+                    GameObject fallbackQuadro = GameObject.Find("QuadroDomPedro");
+                    if (fallbackQuadro != null)
+                        introDialogue = fallbackQuadro.GetComponent<SimpleDialogueTrigger>();
                 }
+
+                if (introDialogue == null)
+                    introDialogue = FindAnyObjectByType<SimpleDialogueTrigger>();
             }
 
             if (hud == null)
                 hud = MuseumHud.Instance != null ? MuseumHud.Instance : FindAnyObjectByType<MuseumHud>();
+
+            if (introDialogue != null)
+            {
+                introDialogue.enabled = true;
+                introDialogue.EnsureReady();
+            }
         }
 
         private void ConfigureRoom2()

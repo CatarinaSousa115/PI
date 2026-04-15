@@ -4594,7 +4594,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: New Text
+  m_Text: 
 --- !u!222 &1254938830
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7275,7 +7275,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 275073087}
@@ -7299,11 +7299,22 @@ MonoBehaviour:
   - Preciso da tua ajuda para recuperar quatro placas desaparecidas.
   - Cada sala guarda pistas e desafios importantes.
   - "Come\xE7e pela Sala da Reconstru\xE7\xE3o."
-  dialoguePanel: {fileID: 0}
-  speakerText: {fileID: 0}
-  bodyText: {fileID: 0}
+  dialoguePanel: {fileID: 698857773}
+  speakerText: {fileID: 47159940}
+  bodyText: {fileID: 1254938829}
+  promptText: {fileID: 0}
+  interactionHintText: {fileID: 0}
+  autoResolveUiReferences: 1
+  autoStyleDialogue: 1
+  promptMessage: Pressiona E para continuar
+  interactionHintMessage: Pressiona E para falar
+  panelColor: {r: 0.06, g: 0.08, b: 0.12, a: 0.88}
+  speakerColor: {r: 0.96, g: 0.84, b: 0.56, a: 1}
+  bodyColor: {r: 0.96, g: 0.97, b: 0.98, a: 1}
+  promptColor: {r: 0.75, g: 0.8, b: 0.88, a: 1}
+  interactionHintColor: {r: 0.98, g: 0.98, b: 1, a: 0.96}
   interactKey: 101
-  requirePlayerTrigger: 0
+  requirePlayerTrigger: 1
   oneShot: 1
   linkedRoom: {fileID: 0}
   completeRoomAfterDialogue: 0
@@ -7328,11 +7339,11 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0000002, y: 1, z: 6.123235e-17}
+  m_Size: {x: 1.0000002, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1902020019
 GameObject:
@@ -7743,7 +7754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.Narrative.LobbyIntroController
   lobbyRoom: {fileID: 1616362047}
-  introDialogue: {fileID: 0}
+  introDialogue: {fileID: 1901093288}
   firstPortal: {fileID: 0}
   hud: {fileID: 439062741}
   introObjective: "Fala com Dom Pedro para descobrires o que aconteceu \xE0s placas
