@@ -179,9 +179,7 @@ namespace MuseumGame.Narrative
                 GameObject quadro = GameObject.Find("DPedro");
                 if (quadro != null)
                 {
-                    introDialogue = quadro.GetComponent<SimpleDialogueTrigger>();
-                    if (quadro.GetComponent<PaintingFrameMarker>() == null)
-                        quadro.AddComponent<PaintingFrameMarker>();
+                    introDialogue = quadro.GetComponentInChildren<SimpleDialogueTrigger>();
                 }
             }
 
