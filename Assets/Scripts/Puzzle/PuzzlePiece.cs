@@ -1,129 +1,289 @@
+using System.Collections;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace Puzzle
 {
-    [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+
+    [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(Collider2D))]
     public class PuzzlePiece : MonoBehaviour
     {
-        [HideInInspector] public int gridX, gridY, totalCols, totalRows;
-        [HideInInspector] public Vector3 correctLocalPosition;
-        [HideInInspector] public bool isPlaced = false;
-        [HideInInspector] public float pieceW;
-        [HideInInspector] public float pieceH;
+        // ─────────────────────────────────────────────
+        // Inspector Fields
+        // ─────────────────────────────────────────────
 
-        // Bottom, Right, Top, Left
-        [HideInInspector] public int[] edges = new int[4];
+        [Header("Snap Settings")]
+        [Tooltip("How close (world units) the piece must be to its slot before auto-snapping.")]
+        public float snapThreshold = 0.25f;
 
-        private MeshRenderer mr;
+        [Tooltip("Speed of the smooth snap animation.")]
+        public float snapSpeed = 12f;
 
-        private static readonly Color normalColor = Color.white;
-        private static readonly Color highlightColor = new Color(1f, 1f, 0.6f);
-        private static readonly Color placedColor = new Color(0.8f, 1f, 0.8f);
+        [Tooltip("Speed of the smooth rotation-to-zero animation when snapping.")]
+        public float snapRotSpeed = 15f;
 
-        public void Init(int gx, int gy, int cols, int rows, Material mat, int[] edgeDirs, float w, float h)
+        [Header("Drag Settings")]
+        [Tooltip("Z position (world) while dragging. Keep slightly in front of frame.")]
+        public float dragZ = -0.1f;
+
+        [Tooltip("How much the piece scales up while held.")]
+        public float dragScaleMultiplier = 1.08f;
+
+        [Header("Visual Feedback")]
+        [Tooltip("Color tint when hovering over the correct slot.")]
+        public Color nearCorrectColor = new Color(0.6f, 1f, 0.6f);
+
+        [Tooltip("Color when locked in place.")]
+        public Color lockedColor = Color.white;
+
+        [Tooltip("Sort order while dragging (should be above other pieces).")]
+        public int dragSortOrder = 10;
+
+        // ─────────────────────────────────────────────
+        // Public State
+        // ─────────────────────────────────────────────
+
+        /// <summary>Grid slot [column, row] this piece belongs to.</summary>
+        public Vector2Int CorrectSlot { get; private set; }
+
+        /// <summary>True once this piece is locked into its slot.</summary>
+        public bool IsLocked { get; private set; }
+
+        // ─────────────────────────────────────────────
+        // Private
+        // ─────────────────────────────────────────────
+
+        private SpriteRenderer _sr;
+        private Collider2D _col;
+        private Camera _puzzleCam;
+
+        private Vector3 _correctWorldPos;
+        private Vector2 _pieceSize;
+
+        private bool _isDragging;
+        private Vector3 _dragOffset;
+        private int _defaultSortOrder;
+        private Vector3 _defaultScale;
+
+        // For snapping animation
+        private bool _isSnapping;
+        private Vector3 _snapTarget;
+
+        // Plane in world space representing the frame's surface (used for accurate dragging)
+        private Plane _dragPlane;
+
+        // ─────────────────────────────────────────────
+        // Initialisation (called by PuzzleManager)
+        // ─────────────────────────────────────────────
+
+        public void Initialise(Vector2Int slot, Vector3 correctWorldPos, Vector2 pieceSize)
         {
-            gridX = gx; gridY = gy;
-            totalCols = cols; totalRows = rows;
-            edges = edgeDirs;
-            pieceW = w;
-            pieceH = h;
-
-            mr = GetComponent<MeshRenderer>();
-            mr.material = mat;
-
-            Mesh mesh = BuildMesh();
-            GetComponent<MeshFilter>().mesh = mesh;
+            CorrectSlot = slot;
+            _correctWorldPos = correctWorldPos;
+            _pieceSize = pieceSize;
         }
 
-        public void SetHighlight(bool on)
+        // ─────────────────────────────────────────────
+        // Unity Lifecycle
+        // ─────────────────────────────────────────────
+
+        private void Awake()
         {
-            if (isPlaced) return;
-            mr.material.color = on ? highlightColor : normalColor;
+            _sr = GetComponent<SpriteRenderer>();
+            _col = GetComponent<Collider2D>();
+            _defaultSortOrder = _sr.sortingOrder;
+            _defaultScale = transform.localScale;
         }
 
-        public void SetPlaced()
+        private void Start()
         {
-            isPlaced = true;
-            mr.material.color = placedColor;
+            // Cache puzzle camera (tagged "PuzzleCamera" or fall back to main)
+            var camObj = GameObject.FindWithTag("PuzzleCamera");
+            _puzzleCam = camObj != null ? camObj.GetComponent<Camera>() : Camera.main;
+
+            // Build drag plane aligned to the frame's forward direction
+            if (PuzzleManager.Instance != null && PuzzleManager.Instance.frameTransform != null)
+                _dragPlane = new Plane(PuzzleManager.Instance.frameTransform.forward,
+                                       PuzzleManager.Instance.frameTransform.position);
+            else
+                _dragPlane = new Plane(Vector3.back, transform.position);
         }
 
-        // ─── Mesh Generation ───────────────────────────────────────────────
-
-        List<Vector2> GenerateEdgePoints(Vector2 start, Vector2 end, Vector2 normal, int dir, int steps = 16)
+        private void Update()
         {
-            var points = new List<Vector2>();
-            float tabHeight = Mathf.Min(pieceW, pieceH) * 0.3f;
+            if (IsLocked) return;
 
-            for (int i = 0; i <= steps; i++)
+            if (_isDragging)
+                HandleDrag();
+
+            if (_isSnapping)
+                AnimateSnap();
+
+            if (_isDragging)
+                CheckProximityHighlight();
+        }
+
+        // ─────────────────────────────────────────────
+        // Mouse / Pointer Events
+        // ─────────────────────────────────────────────
+
+        private void OnMouseDown()
+        {
+            if (IsLocked || !PuzzleManager.Instance.IsActive) return;
+
+            _isDragging = true;
+            _isSnapping = false;
+
+            // Compute offset so piece doesn't jump to cursor centre
+            Vector3 worldClick = GetMouseWorldPos();
+            _dragOffset = transform.position - worldClick;
+
+            // Visual feedback
+            _sr.sortingOrder = dragSortOrder;
+            transform.localScale = _defaultScale * dragScaleMultiplier;
+        }
+
+        private void OnMouseUp()
+        {
+            if (!_isDragging) return;
+            _isDragging = false;
+
+            // Reset visuals
+            _sr.sortingOrder = _defaultSortOrder;
+            transform.localScale = _defaultScale;
+            _sr.color = Color.white;
+
+            TrySnap();
+        }
+
+        // ─────────────────────────────────────────────
+        // Drag
+        // ─────────────────────────────────────────────
+
+        private void HandleDrag()
+        {
+            Vector3 target = GetMouseWorldPos() + _dragOffset;
+            target.z = PuzzleManager.Instance.frameTransform.position.z + dragZ;
+            transform.position = target;
+
+            // Gradually straighten rotation while dragging
+            transform.rotation = Quaternion.Lerp(
+                transform.rotation,
+                Quaternion.identity,
+                Time.deltaTime * 8f
+            );
+        }
+
+        private Vector3 GetMouseWorldPos()
+        {
+            Ray ray = _puzzleCam.ScreenPointToRay(Input.mousePosition);
+            float enter;
+            if (_dragPlane.Raycast(ray, out enter))
+                return ray.GetPoint(enter);
+
+            // Fallback
+            Vector3 screen = Input.mousePosition;
+            screen.z = Mathf.Abs(_puzzleCam.transform.position.z + dragZ);
+            return _puzzleCam.ScreenToWorldPoint(screen);
+        }
+
+        // ─────────────────────────────────────────────
+        // Snap Logic
+        // ─────────────────────────────────────────────
+
+        private void TrySnap()
+        {
+            if (PuzzleManager.Instance == null) return;
+
+            float dist;
+            Vector2Int nearest = PuzzleManager.Instance.GetNearestSlot(transform.position, out dist);
+
+            bool isCorrectSlot = nearest == CorrectSlot;
+            bool slotFree = !PuzzleManager.Instance.SlotOccupied[nearest.x, nearest.y];
+            bool closeEnough = dist <= snapThreshold;
+
+            if (closeEnough && isCorrectSlot && slotFree)
             {
-                float t = (float)i / steps;
-                float bump = 0f;
-
-                if (t > 0.2f && t < 0.8f)
-                {
-                    float localT = (t - 0.2f) / 0.6f;
-                    bump = Mathf.Sin(localT * Mathf.PI) * tabHeight * dir;
-                }
-
-                points.Add(Vector2.Lerp(start, end, t) + normal * bump);
+                // Snap to correct slot → lock
+                BeginSnapTo(_correctWorldPos, lockOnArrive: true);
             }
-
-            return points;
+            else if (closeEnough && slotFree)
+            {
+                // Snap to nearest free slot temporarily (wrong slot)
+                BeginSnapTo(PuzzleManager.Instance.GetSlotWorldPosition(nearest), lockOnArrive: false);
+            }
+            // else: leave piece where it is
         }
 
-        Mesh BuildMesh()
+        private void BeginSnapTo(Vector3 targetPos, bool lockOnArrive)
         {
-            float w = pieceW;
-            float h = pieceH;
+            _snapTarget = targetPos;
+            _isSnapping = true;
+            _lockOnArrive = lockOnArrive;
+        }
 
-            Vector2 bl = new Vector2(0, 0);
-            Vector2 br = new Vector2(w, 0);
-            Vector2 tr = new Vector2(w, h);
-            Vector2 tl = new Vector2(0, h);
+        private bool _lockOnArrive;
 
-            var outline = new List<Vector2>();
-            outline.AddRange(GenerateEdgePoints(bl, br, Vector2.down, edges[0]));
-            outline.AddRange(GenerateEdgePoints(br, tr, Vector2.right, edges[1]));
-            outline.AddRange(GenerateEdgePoints(tr, tl, Vector2.up, edges[2]));
-            outline.AddRange(GenerateEdgePoints(tl, bl, Vector2.left, edges[3]));
+        private void AnimateSnap()
+        {
+            transform.position = Vector3.Lerp(transform.position, _snapTarget, Time.deltaTime * snapSpeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.identity, Time.deltaTime * snapRotSpeed);
 
-            Vector2 center = new Vector2(w / 2f, h / 2f);
-
-            var verts = new List<Vector3>();
-            var uvs = new List<Vector2>();
-            var tris = new List<int>();
-
-            verts.Add(new Vector3(center.x, center.y, 0f));
-            uvs.Add(new Vector2(
-                (gridX + 0.5f) / totalCols,
-                (gridY + 0.5f) / totalRows
-            ));
-
-            foreach (Vector2 p in outline)
+            if (Vector3.Distance(transform.position, _snapTarget) < 0.002f)
             {
-                verts.Add(new Vector3(p.x, p.y, 0f));
-                uvs.Add(new Vector2(
-                    (gridX + (p.x / w)) / totalCols,
-                    (gridY + (p.y / h)) / totalRows
-                ));
+                transform.position = _snapTarget;
+                transform.rotation = Quaternion.identity;
+                _isSnapping = false;
+
+                if (_lockOnArrive)
+                    LockPiece();
             }
+        }
 
-            for (int i = 1; i < verts.Count - 1; i++)
-            {
-                tris.Add(0); tris.Add(i); tris.Add(i + 1);
-            }
-            tris.Add(0); tris.Add(verts.Count - 1); tris.Add(1);
+        private void LockPiece()
+        {
+            IsLocked = true;
+            _sr.color = lockedColor;
 
-            var mesh = new Mesh
-            {
-                name = $"Piece_{gridX}_{gridY}",
-                vertices = verts.ToArray(),
-                triangles = tris.ToArray(),
-                uv = uvs.ToArray()
-            };
-            mesh.RecalculateNormals();
-            return mesh;
+            // Disable collider so it can't be clicked again
+            _col.enabled = false;
+
+            // Move to exact Z of frame
+            Vector3 p = transform.position;
+            p.z = PuzzleManager.Instance.frameTransform.position.z;
+            transform.position = p;
+
+            // Notify manager
+            PuzzleManager.Instance.NotifyPieceLocked(this);
+        }
+
+        // ─────────────────────────────────────────────
+        // Proximity Highlight
+        // ─────────────────────────────────────────────
+
+        private void CheckProximityHighlight()
+        {
+            if (PuzzleManager.Instance == null) return;
+
+            float dist;
+            Vector2Int nearest = PuzzleManager.Instance.GetNearestSlot(transform.position, out dist);
+
+            bool isCorrect = nearest == CorrectSlot;
+            bool isClose = dist <= snapThreshold * 1.5f;
+
+            _sr.color = (isClose && isCorrect) ? nearCorrectColor : Color.white;
+        }
+
+        // ─────────────────────────────────────────────
+        // Public: Force-lock at correct position (e.g. cheat / debug)
+        // ─────────────────────────────────────────────
+
+        public void ForceComplete()
+        {
+            if (IsLocked) return;
+            transform.position = _correctWorldPos;
+            transform.rotation = Quaternion.identity;
+            LockPiece();
         }
     }
 }
