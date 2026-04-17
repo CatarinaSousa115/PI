@@ -31,15 +31,19 @@ namespace MuseumGame.Player
 
         void Start()
         {
-            if (lockCursorOnPlay)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            SetCursorState(lockCursorOnPlay);
+        }
+
+        public void SetCursorState(bool locked)
+        {
+            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !locked;
         }
 
         void Update()
         {
+            if (!controller.enabled) return;
+
             HandleLook();
             HandleMovement();
             HandleCursorToggle();
@@ -47,6 +51,8 @@ namespace MuseumGame.Player
 
         private void HandleLook()
         {
+            if (Cursor.lockState != CursorLockMode.Locked) return;
+
             float mouseX = Input.GetAxis("Mouse X") * lookSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity;
 
@@ -61,6 +67,8 @@ namespace MuseumGame.Player
 
         private void HandleMovement()
         {
+            if (!controller.enabled) return;
+
             float moveX = Input.GetAxisRaw("Horizontal");
             float moveZ = Input.GetAxisRaw("Vertical");
 
@@ -89,14 +97,14 @@ namespace MuseumGame.Player
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                SetCursorState(false);
             }
 
-            if (Input.GetMouseButtonDown(0) && lockCursorOnPlay)
+            // Only lock if the puzzle isn't active
+            if (Input.GetMouseButtonDown(0) && lockCursorOnPlay &&
+               (PuzzleManager.Instance == null || !PuzzleManager.Instance.IsActive))
             {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                SetCursorState(true);
             }
         }
     }

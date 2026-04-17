@@ -228,20 +228,7 @@ namespace MuseumGame.Narrative
             if (puzzleManager == null)
                 return;
 
-            puzzleManager.linkedRoom = room2Room;
-            puzzleManager.boardWidth = puzzleBoardWidth;
             puzzleManager.scatterRadius = puzzleScatterRadius;
-            puzzleManager.autoPositionScatterRoot = false;
-            puzzleManager.completedObjective = room2CompletedObjective;
-            puzzleManager.completionStatus = room2CompletedStatus;
-            puzzleManager.hideLegacyCanvasOnStart = true;
-
-            if (puzzleManager.scatterRoot != null)
-            {
-                puzzleManager.scatterRoot.position =
-                    puzzleBoard.transform.position + puzzleBoard.transform.forward * puzzleScatterDistanceFromWall;
-                puzzleManager.scatterRoot.rotation = puzzleBoard.transform.rotation;
-            }
 
             puzzleManager.enabled = true;
         }
@@ -259,14 +246,6 @@ namespace MuseumGame.Narrative
                 return;
 
             PositionPuzzleBoardOnWall(puzzleBoard.transform, wall);
-
-            PuzzleManager manager = puzzleBoard.GetComponent<PuzzleManager>();
-            if (manager != null && manager.scatterRoot != null)
-            {
-                manager.scatterRoot.position =
-                    puzzleBoard.transform.position + puzzleBoard.transform.forward * puzzleScatterDistanceFromWall;
-                manager.scatterRoot.rotation = puzzleBoard.transform.rotation;
-            }
         }
 
         [ContextMenu("Capture Current Room 2 Display")]
@@ -341,10 +320,11 @@ namespace MuseumGame.Narrative
 
         private float GetPuzzleBoardHeight()
         {
-            if (puzzleManager != null && puzzleManager.paintingMaterial != null && puzzleManager.paintingMaterial.mainTexture != null)
+            if (puzzleManager != null && puzzleManager.paintingTexture != null)
             {
-                float aspect = (float)puzzleManager.paintingMaterial.mainTexture.width /
-                    puzzleManager.paintingMaterial.mainTexture.height;
+                float aspect = (float)puzzleManager.paintingTexture.width /
+                               puzzleManager.paintingTexture.height;
+
                 if (aspect > 0.0001f)
                     return puzzleBoardWidth / aspect;
             }
