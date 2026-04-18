@@ -17,6 +17,7 @@ public class PuzzleManager : MonoBehaviour
 
     [Header("Frame & Layout")]
     public Transform frameTransform;
+    private Transform _pieceContainer;
     [Tooltip("The size of the puzzle area inside the frame in local units.")]
     public Vector2 frameSize = new Vector2(1f, 1f);
     [Tooltip("Offset to shift the entire puzzle grid.")]
@@ -119,6 +120,13 @@ public class PuzzleManager : MonoBehaviour
     public void StartPuzzle()
     {
         if (_allPieces.Count > 0 || paintingTexture == null || frameTransform == null) return;
+
+        GameObject containerGO = new GameObject("PieceContainer");
+        _pieceContainer = containerGO.transform;
+        _pieceContainer.position = frameTransform.position;
+        _pieceContainer.rotation = frameTransform.rotation;
+        _pieceContainer.localScale = Vector3.one;
+
         GenerateSlots();
         GeneratePieces();
         ScatterPieces();
@@ -133,25 +141,27 @@ public class PuzzleManager : MonoBehaviour
     private void GenerateSlots()
     {
         SlotPositions = new Vector3[columns, rows];
-        
+
+        // Actual world dimensions of the frame area
+        float worldWidth = frameSize.x * frameTransform.lossyScale.x;
+        float worldHeight = frameSize.y * frameTransform.lossyScale.y;
+
+        // Center in _pieceContainer local space (same rotation as frame, scale = 1)
         Vector3 center = Vector3.zero;
         if (autoCenterOnMesh)
         {
-            Renderer rend = frameTransform.GetComponent<Renderer>() ?? frameTransform.GetComponentInChildren<Renderer>();
-            if (rend != null) { center = frameTransform.InverseTransformPoint(rend.bounds.center); center.z = 0; }
+            Renderer rend = frameTransform.GetComponent<Renderer>()
+                         ?? frameTransform.GetComponentInChildren<Renderer>();
+            if (rend != null) { center = _pieceContainer.InverseTransformPoint(rend.bounds.center); center.z = 0; }
         }
-        
-        PieceSize = new Vector2(frameSize.x / columns, frameSize.y / rows);
-        float startX = center.x - frameSize.x / 2f + PieceSize.x / 2f + frameOffset.x;
-        float startY = center.y - frameSize.y / 2f + PieceSize.y / 2f + frameOffset.y;
+
+        PieceSize = new Vector2(worldWidth / columns, worldHeight / rows);
+        float startX = center.x - worldWidth / 2f + PieceSize.x / 2f + frameOffset.x * frameTransform.lossyScale.x;
+        float startY = center.y - worldHeight / 2f + PieceSize.y / 2f + frameOffset.y * frameTransform.lossyScale.y;
 
         for (int c = 0; c < columns; c++)
-        {
             for (int r = 0; r < rows; r++)
-            {
                 SlotPositions[c, r] = new Vector3(startX + c * PieceSize.x, startY + r * PieceSize.y, -0.01f);
-            }
-        }
     }
 
     private void GeneratePieces()
@@ -167,14 +177,15 @@ public class PuzzleManager : MonoBehaviour
                 if (slice == null) continue;
                 
                 Sprite sprite = Sprite.Create(slice, new Rect(0, 0, slice.width, slice.height), new Vector2(0.5f, 0.5f), 100f);
-                GameObject go = Instantiate(piecePrefab, frameTransform, false);
+                GameObject go = Instantiate(piecePrefab, _pieceContainer, false);
                 go.name = $"Piece_{c}_{r}";
                 go.GetComponent<SpriteRenderer>().sprite = sprite;
-                
+
                 // Scale piece to match grid slot exactly
                 float sw = slice.width / 100f; float sh = slice.height / 100f;
                 go.transform.localScale = new Vector3(PieceSize.x / sw, PieceSize.y / sh, 1f);
                 go.transform.localPosition = SlotPositions[c, r];
+                
                 go.GetComponent<BoxCollider>().size = new Vector3(sw, sh, 0.1f);
                 
                 var piece = go.GetComponent<PuzzlePiece>() ?? go.AddComponent<PuzzlePiece>();
@@ -188,13 +199,20 @@ public class PuzzleManager : MonoBehaviour
 
     private void ScatterPieces()
     {
+        float worldWidth = frameSize.x * frameTransform.lossyScale.x;
+        float worldHeight = frameSize.y * frameTransform.lossyScale.y;
         foreach (var go in _allPieces)
         {
-            Vector3 pos = new Vector3(Random.Range(-frameSize.x/2f, frameSize.x/2f), Random.Range(-frameSize.y/2f, frameSize.y/2f), -pieceDepthOffset);
-            pos.z -= Random.Range(0f, 0.01f); go.transform.localPosition = pos;
+            Vector3 pos = new Vector3(
+                Random.Range(-worldWidth / 2f, worldWidth / 2f),
+                Random.Range(-worldHeight / 2f, worldHeight / 2f),
+                -pieceDepthOffset - Random.Range(0f, 0.01f)
+            );
+            go.transform.localPosition = pos;
             go.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
         }
     }
+
 
     private Texture2D SliceTexture(Texture2D src, int x, int y, int w, int h)
     {
