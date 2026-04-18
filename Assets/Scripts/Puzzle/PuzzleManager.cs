@@ -12,21 +12,24 @@ public class PuzzleManager : MonoBehaviour
 
     [Header("Puzzle Setup")]
     public Texture2D paintingTexture;
-    [Range(2, 8)] public int columns = 3;
-    [Range(2, 8)] public int rows = 3;
+    [Range(2, 10)] public int columns = 3;
+    [Range(2, 10)] public int rows = 3;
 
     [Header("Frame & Layout")]
     public Transform frameTransform;
-    public Vector2 frameSize = new Vector2(2f, 2f);
-    public float framePadding = 0.05f;
+    [Tooltip("The size of the puzzle area inside the frame in local units.")]
+    public Vector2 frameSize = new Vector2(1f, 1f);
+    [Tooltip("Offset to shift the entire puzzle grid.")]
+    public Vector2 frameOffset = Vector2.zero;
+    [Tooltip("If true, the puzzle centers itself on the mesh bounds.")]
+    public bool autoCenterOnMesh = true;
 
     [Header("Prefabs")]
     public GameObject piecePrefab;
-    public GameObject slotGhostPrefab;
 
     [Header("Scatter Settings")]
     public bool scatterInsideFrame = true;
-    public float scatterRadius = 1.5f;
+    public float scatterRadius = 1.0f;
     public float pieceDepthOffset = 0.03f;
 
     [Header("Completion")]
@@ -36,18 +39,17 @@ public class PuzzleManager : MonoBehaviour
     public AudioClip snapSound;
 
     public static PuzzleManager Instance { get; private set; }
-
-    public Vector3[,] SlotPositions { get; private set; }
-    public bool[,] SlotOccupied { get; private set; }
-    public Vector2 PieceSize { get; private set; }
-
+    public Vector3[,] SlotPositions { get; private set; } 
+    public Vector2 PieceSize { get; private set; } 
     public int LockedCount { get; private set; }
     public int TotalPieces => columns * rows;
     public bool IsActive { get; private set; }
 
-    private AudioSource _audio;
     private List<GameObject> _allPieces = new List<GameObject>();
     private Dictionary<Vector2Int, PuzzleDragger> _pieceMap = new Dictionary<Vector2Int, PuzzleDragger>();
+    private AudioSource _audio;
+    private PuzzleDragger _currentDragger;
+    private Camera _puzzleCam;
 
     private void Awake()
     {
@@ -58,51 +60,65 @@ public class PuzzleManager : MonoBehaviour
 
     private void Start()
     {
-        if (playerObject != null)
-            playerScript = playerObject.GetComponent<SimpleFirstPersonController>();
+        if (playerObject == null)
+        {
+            var fp = Object.FindFirstObjectByType<SimpleFirstPersonController>();
+            if (fp != null) playerObject = fp.gameObject;
+        }
+        if (playerObject != null) playerScript = playerObject.GetComponent<SimpleFirstPersonController>();
+        _puzzleCam = Camera.main;
+        StartPuzzle();
     }
 
-    // ─── Mode Switching ──────────────────────────────────────────
+    private void Update()
+    {
+        if (!IsActive) return;
+        HandleInput();
+    }
+
+    private void HandleInput()
+    {
+        if (_puzzleCam == null) _puzzleCam = Camera.main;
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = _puzzleCam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+            {
+                var dragger = hit.collider.GetComponent<PuzzleDragger>();
+                if (dragger != null && !dragger.piece.IsLocked)
+                {
+                    _currentDragger = dragger;
+                    _currentDragger.StartDragging(ray);
+                }
+            }
+        }
+        if (Input.GetMouseButton(0) && _currentDragger != null)
+            _currentDragger.FollowMouse(_puzzleCam.ScreenPointToRay(Input.mousePosition));
+        if (Input.GetMouseButtonUp(0) && _currentDragger != null)
+        {
+            _currentDragger.StopDragging();
+            _currentDragger = null;
+        }
+    }
 
     public void EnterPuzzleMode()
     {
         IsActive = true;
-
-        if (playerScript != null)
-        {
-            playerScript.enabled = false;
-            var cc = playerObject.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
-        }
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        StartPuzzle();
+        if (playerScript != null) { playerScript.enabled = false; playerObject.GetComponent<CharacterController>().enabled = false; }
+        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
+        if (_allPieces.Count == 0) StartPuzzle();
     }
 
     public void ExitPuzzleMode()
     {
         IsActive = false;
-
-        if (playerScript != null)
-        {
-            playerScript.enabled = true;
-            var cc = playerObject.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = true;
-
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
+        if (playerScript != null) { playerScript.enabled = true; playerObject.GetComponent<CharacterController>().enabled = true; }
+        Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
     }
-
-    // ─── Puzzle Lifecycle ────────────────────────────────────────
 
     public void StartPuzzle()
     {
-        if (_allPieces.Count > 0) return; // Already started
-        LockedCount = 0;
-
+        if (_allPieces.Count > 0 || paintingTexture == null || frameTransform == null) return;
         GenerateSlots();
         GeneratePieces();
         ScatterPieces();
@@ -111,136 +127,99 @@ public class PuzzleManager : MonoBehaviour
     public void ResetPuzzle()
     {
         foreach (var p in _allPieces) if (p != null) Destroy(p);
-        _allPieces.Clear();
-        _pieceMap.Clear();
-        LockedCount = 0;
-        IsActive = false;
+        _allPieces.Clear(); _pieceMap.Clear(); LockedCount = 0; IsActive = false;
     }
-
-    public void NotifyPieceLocked(PuzzlePiece piece)
-    {
-        SlotOccupied[piece.CorrectSlot.x, piece.CorrectSlot.y] = true;
-        LockedCount++;
-        PlaySound(snapSound);
-
-        if (LockedCount >= TotalPieces)
-            StartCoroutine(CompletionSequence());
-    }
-
-    public PuzzleDragger GetPiece(int x, int y)
-    {
-        _pieceMap.TryGetValue(new Vector2Int(x, y), out PuzzleDragger dragger);
-        return dragger;
-    }
-
-    // ─── Generation Logic ────────────────────────────────────────
 
     private void GenerateSlots()
     {
         SlotPositions = new Vector3[columns, rows];
-        SlotOccupied = new bool[columns, rows];
-
-        float usableW = frameSize.x - framePadding * 2f;
-        float usableH = frameSize.y - framePadding * 2f;
-        PieceSize = new Vector2(usableW / columns, usableH / rows);
-
-        float startX = -usableW / 2f + PieceSize.x / 2f;
-        float startY = -usableH / 2f + PieceSize.y / 2f;
+        
+        Vector3 center = Vector3.zero;
+        if (autoCenterOnMesh)
+        {
+            Renderer rend = frameTransform.GetComponent<Renderer>() ?? frameTransform.GetComponentInChildren<Renderer>();
+            if (rend != null) { center = frameTransform.InverseTransformPoint(rend.bounds.center); center.z = 0; }
+        }
+        
+        PieceSize = new Vector2(frameSize.x / columns, frameSize.y / rows);
+        float startX = center.x - frameSize.x / 2f + PieceSize.x / 2f + frameOffset.x;
+        float startY = center.y - frameSize.y / 2f + PieceSize.y / 2f + frameOffset.y;
 
         for (int c = 0; c < columns; c++)
+        {
             for (int r = 0; r < rows; r++)
             {
-                Vector3 localPos = new Vector3(startX + c * PieceSize.x, startY + r * PieceSize.y, 0f);
-                SlotPositions[c, r] = frameTransform.TransformPoint(localPos);
-
-                if (slotGhostPrefab != null)
-                {
-                    var ghost = Instantiate(slotGhostPrefab, SlotPositions[c, r], frameTransform.rotation, frameTransform);
-                    Vector3 fs = frameTransform.lossyScale;
-                    ghost.transform.localScale = new Vector3(PieceSize.x / fs.x, PieceSize.y / fs.y, 0.001f);
-                }
+                SlotPositions[c, r] = new Vector3(startX + c * PieceSize.x, startY + r * PieceSize.y, -0.01f);
             }
+        }
     }
 
     private void GeneratePieces()
     {
-        if (paintingTexture == null) return;
-
         int pixW = paintingTexture.width / columns;
         int pixH = paintingTexture.height / rows;
-
         for (int c = 0; c < columns; c++)
+        {
             for (int r = 0; r < rows; r++)
             {
+                // Slicing from bottom-left (Unity Standard)
                 Texture2D slice = SliceTexture(paintingTexture, c * pixW, r * pixH, pixW, pixH);
-                float ppu = pixW / PieceSize.x;
-                Sprite sprite = Sprite.Create(slice, new Rect(0, 0, slice.width, slice.height), new Vector2(0.5f, 0.5f), ppu);
-
-                GameObject go = Instantiate(piecePrefab, SlotPositions[c, r], frameTransform.rotation);
+                if (slice == null) continue;
+                
+                Sprite sprite = Sprite.Create(slice, new Rect(0, 0, slice.width, slice.height), new Vector2(0.5f, 0.5f), 100f);
+                GameObject go = Instantiate(piecePrefab, frameTransform, false);
                 go.name = $"Piece_{c}_{r}";
-
-                var sr = go.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sprite = sprite;
-
-                // Setup Data Component
-                var piece = go.GetComponent<PuzzlePiece>();
+                go.GetComponent<SpriteRenderer>().sprite = sprite;
+                
+                // Scale piece to match grid slot exactly
+                float sw = slice.width / 100f; float sh = slice.height / 100f;
+                go.transform.localScale = new Vector3(PieceSize.x / sw, PieceSize.y / sh, 1f);
+                go.transform.localPosition = SlotPositions[c, r];
+                go.GetComponent<BoxCollider>().size = new Vector3(sw, sh, 0.1f);
+                
+                var piece = go.GetComponent<PuzzlePiece>() ?? go.AddComponent<PuzzlePiece>();
                 piece.Initialise(new Vector2Int(c, r), SlotPositions[c, r]);
-
-                // Setup Interaction Component
-                var dragger = go.AddComponent<PuzzleDragger>();
-                dragger.manager = this;
-                dragger.piece = piece;
-
-                _pieceMap[new Vector2Int(c, r)] = dragger;
-                _allPieces.Add(go);
+                var dragger = go.GetComponent<PuzzleDragger>() ?? go.AddComponent<PuzzleDragger>();
+                dragger.manager = this; dragger.piece = piece;
+                _pieceMap[new Vector2Int(c, r)] = dragger; _allPieces.Add(go);
             }
+        }
     }
 
     private void ScatterPieces()
     {
-        float usableW = frameSize.x - framePadding * 2f;
-        float usableH = frameSize.y - framePadding * 2f;
-
         foreach (var go in _allPieces)
         {
-            Vector3 worldPos;
-            if (scatterInsideFrame)
-            {
-                float lx = Random.Range(-usableW / 2f, usableW / 2f);
-                float ly = Random.Range(-usableH / 2f, usableH / 2f);
-                worldPos = frameTransform.TransformPoint(new Vector3(lx, ly, 0f));
-            }
-            else
-            {
-                float angle = Random.Range(0f, Mathf.PI * 2f);
-                float radius = Random.Range(scatterRadius * 0.5f, scatterRadius);
-                worldPos = frameTransform.position + frameTransform.right * (Mathf.Cos(angle) * radius) + frameTransform.up * (Mathf.Sin(angle) * radius);
-            }
-
-            worldPos -= frameTransform.forward * pieceDepthOffset;
-            go.transform.position = worldPos;
-
-            float tiltAngle = Random.Range(-20f, 20f);
-            go.transform.rotation = Quaternion.AngleAxis(tiltAngle, frameTransform.forward) * frameTransform.rotation;
+            Vector3 pos = new Vector3(Random.Range(-frameSize.x/2f, frameSize.x/2f), Random.Range(-frameSize.y/2f, frameSize.y/2f), -pieceDepthOffset);
+            pos.z -= Random.Range(0f, 0.01f); go.transform.localPosition = pos;
+            go.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
         }
     }
 
     private Texture2D SliceTexture(Texture2D src, int x, int y, int w, int h)
     {
-        Color[] px = src.GetPixels(x, y, w, h);
-        Texture2D tex = new Texture2D(w, h, src.format, false);
-        tex.SetPixels(px);
-        tex.Apply();
-        return tex;
+        try { Color[] px = src.GetPixels(x, y, w, h); Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false); tex.SetPixels(px); tex.Apply(); return tex; }
+        catch { return null; }
+    }
+
+    public void NotifyPieceLocked(PuzzlePiece piece)
+    {
+        LockedCount++; PlaySound(snapSound);
+        if (LockedCount >= TotalPieces) StartCoroutine(CompletionSequence());
     }
 
     private void PlaySound(AudioClip clip) { if (clip != null && _audio != null) _audio.PlayOneShot(clip); }
+    private IEnumerator CompletionSequence() { yield return new WaitForSeconds(0.3f); if (completionParticles != null) completionParticles.Play(); PlaySound(completionSound); onPuzzleComplete?.Invoke(); }
 
-    private IEnumerator CompletionSequence()
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
     {
-        yield return new WaitForSeconds(0.3f);
-        completionParticles?.Play();
-        PlaySound(completionSound);
-        onPuzzleComplete?.Invoke();
+        if (frameTransform == null) return;
+        Gizmos.matrix = frameTransform.localToWorldMatrix;
+        Vector3 center = Vector3.zero;
+        Renderer rend = frameTransform.GetComponent<Renderer>() ?? frameTransform.GetComponentInChildren<Renderer>();
+        if (autoCenterOnMesh && rend != null) { center = frameTransform.InverseTransformPoint(rend.bounds.center); center.z = 0; }
+        Gizmos.color = Color.cyan; Gizmos.DrawWireCube(center + (Vector3)frameOffset, new Vector3(frameSize.x, frameSize.y, 0.01f));
     }
+#endif
 }

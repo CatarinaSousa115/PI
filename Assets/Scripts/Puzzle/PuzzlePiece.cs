@@ -6,7 +6,7 @@ public class PuzzlePiece : MonoBehaviour
 {
     public Color lockedColor = Color.white;
     public Vector2Int CorrectSlot { get; private set; }
-    public Vector3 CorrectWorldPos { get; private set; }
+    public Vector3 CorrectSlotLocal { get; private set; }
     public bool IsLocked { get; private set; }
 
     private SpriteRenderer _sr;
@@ -18,31 +18,21 @@ public class PuzzlePiece : MonoBehaviour
         _col = GetComponent<BoxCollider>();
     }
 
-    private void Start()
-    {
-        ResizeCollider();
-    }
-
-    public void Initialise(Vector2Int slot, Vector3 correctWorldPos)
+    public void Initialise(Vector2Int slot, Vector3 correctSlotLocal)
     {
         CorrectSlot = slot;
-        CorrectWorldPos = correctWorldPos;
+        CorrectSlotLocal = correctSlotLocal;
     }
 
     public void LockPiece()
     {
         IsLocked = true;
-        _col.enabled = false;
-        _sr.color = lockedColor;
-        _sr.sortingOrder = 0;
+        if (_col != null) _col.enabled = false;
+        if (_sr != null)
+        {
+            _sr.color = lockedColor;
+            _sr.sortingOrder = 0;
+        }
         PuzzleManager.Instance.NotifyPieceLocked(this);
-    }
-
-    private void ResizeCollider()
-    {
-        if (_sr == null || _sr.sprite == null || _col == null) return;
-        Bounds b = _sr.sprite.bounds;
-        _col.center = b.center;
-        _col.size = new Vector3(b.size.x, b.size.y, 0.01f);
     }
 }
