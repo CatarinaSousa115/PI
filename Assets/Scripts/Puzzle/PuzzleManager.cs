@@ -185,11 +185,16 @@ public class PuzzleManager : MonoBehaviour
                 float sw = slice.width / 100f; float sh = slice.height / 100f;
                 go.transform.localScale = new Vector3(PieceSize.x / sw, PieceSize.y / sh, 1f);
                 go.transform.localPosition = SlotPositions[c, r];
-                
+                // In GeneratePieces(), replace the localPosition line with:
+                int index = c * rows + r;
+                Vector3 slotPos = SlotPositions[c, r];
+                slotPos.z = -0.001f * index; // stagger each piece slightly
+                go.transform.localPosition = slotPos;
+                // Also update the piece's stored home position to match:
                 go.GetComponent<BoxCollider>().size = new Vector3(sw, sh, 0.1f);
-                
+    
                 var piece = go.GetComponent<PuzzlePiece>() ?? go.AddComponent<PuzzlePiece>();
-                piece.Initialise(new Vector2Int(c, r), SlotPositions[c, r]);
+                piece.Initialise(new Vector2Int(c, r), slotPos);
                 var dragger = go.GetComponent<PuzzleDragger>() ?? go.AddComponent<PuzzleDragger>();
                 dragger.manager = this; dragger.piece = piece;
                 _pieceMap[new Vector2Int(c, r)] = dragger; _allPieces.Add(go);
