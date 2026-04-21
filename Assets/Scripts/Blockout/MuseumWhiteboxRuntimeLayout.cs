@@ -11,12 +11,17 @@
             public Vector2 size;
         }
 
-        public class MuseumWhiteboxRuntimeLayout : MonoBehaviour
-        {
-            public float wallHeight = 2.8f;
-            public float wallThickness = 0.15f;
-            public float floorThickness = 0.1f;
-            public List<RuntimeRoomLayout> rooms = new List<RuntimeRoomLayout>();
+    public class MuseumWhiteboxRuntimeLayout : MonoBehaviour
+    {
+        [Header("Execution")]
+        public bool applyLayoutOnAwake;
+        public bool rebuildDoorwaysOnApply = true;
+        public bool alignHelpersOnApply = true;
+
+        public float wallHeight = 2.8f;
+        public float wallThickness = 0.15f;
+        public float floorThickness = 0.1f;
+        public List<RuntimeRoomLayout> rooms = new List<RuntimeRoomLayout>();
 
             [Header("Doorways")]
             public string lobbyRoomName = "Lobby 1.1";
@@ -45,14 +50,30 @@
             public string tpRoom4Name = "TP_Sala4";
             public string tpRoom5Name = "TP_Sala5";
 
-            void Awake()
+        void Awake()
+        {
+            if (!applyLayoutOnAwake)
+                return;
+
+            ApplyLayoutNow();
+        }
+
+        [ContextMenu("Apply Layout Now")]
+        public void ApplyLayoutNow()
+        {
+            EnsureDefaults();
+            ApplyLayouts();
+
+            if (rebuildDoorwaysOnApply)
             {
-                EnsureDefaults();
-                ApplyLayouts();
                 RefreshDoorMarkerPosition(lobbyRoomName, lobbyDoorName);
                 RefreshDoorMarkerPosition(room2Name, room2DoorName);
                 RebuildDoorway(lobbyRoomName, lobbyWallName, lobbyDoorName);
                 RebuildDoorway(room2Name, room2WallName, room2DoorName);
+            }
+
+            if (alignHelpersOnApply)
+            {
                 RepositionDomPedro();
                 AlignTeleportPoint(tpLobbyName, lobbyRoomName, lobbyMarkerName);
                 AlignTeleportPoint(tpRoom2Name, room2Name, room2MarkerName);
@@ -60,6 +81,7 @@
                 AlignTeleportPoint(tpRoom4Name, "Sala 4 - 1.5", "Sala 4 - 1.5 Marker");
                 AlignTeleportPoint(tpRoom5Name, "Sala 5 - 1.13", "Sala 5 - 1.13 Marker");
             }
+        }
 
             private void EnsureDefaults()
             {

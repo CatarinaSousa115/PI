@@ -32,7 +32,7 @@ namespace MuseumGame.Blockout
     public class MuseumBlockoutGenerator : MonoBehaviour
     {
         [Header("Blockout Settings")]
-        public float wallHeight = 2.8f;
+        public float wallHeight = 2.1f;
         public float wallThickness = 0.15f;
         public float floorThickness = 0.1f;
         public float markerHeight = 2f;
@@ -50,11 +50,11 @@ namespace MuseumGame.Blockout
                 {
                     label = "Lobby 1.1",
                     roomId = MuseumRoomId.Lobby,
-                    position = new Vector2(4.8f, 4.0f),
-                    size = new Vector2(1.8f, 2.6f),
+                    position = new Vector2(5.7f, 6.6f),
+                    size = new Vector2(3.6f, 5.2f),
                     doorMarkers = new List<BlockoutDoorMarker>
                     {
-                        new BlockoutDoorMarker { label = "To 1.2", wall = WallSide.West, normalizedOffset = 0.55f },
+                        new BlockoutDoorMarker { label = "To 1.2", wall = WallSide.West, normalizedOffset = 0.72f },
                         new BlockoutDoorMarker { label = "To 1.3", wall = WallSide.South, normalizedOffset = 0.55f }
                     }
                 },
@@ -62,11 +62,11 @@ namespace MuseumGame.Blockout
                 {
                     label = "Sala 2 - 1.2",
                     roomId = MuseumRoomId.Reconstruction,
-                    position = new Vector2(1.95f, 4.0f),
-                    size = new Vector2(3.9f, 2.6f),
+                    position = new Vector2(0f, 6.6f),
+                    size = new Vector2(7.8f, 5.2f),
                     doorMarkers = new List<BlockoutDoorMarker>
                     {
-                        new BlockoutDoorMarker { label = "To 1.1", wall = WallSide.East, normalizedOffset = 0.55f },
+                        new BlockoutDoorMarker { label = "To 1.1", wall = WallSide.East, normalizedOffset = 0.72f },
                         new BlockoutDoorMarker { label = "To 1.3", wall = WallSide.South, normalizedOffset = 0.08f }
                     }
                 },
@@ -74,8 +74,8 @@ namespace MuseumGame.Blockout
                 {
                     label = "Sala 3 - 1.3",
                     roomId = MuseumRoomId.Conversations,
-                    position = new Vector2(2.25f, 0.0f),
-                    size = new Vector2(3.6f, 2.6f),
+                    position = new Vector2(0.45f, 0f),
+                    size = new Vector2(7.2f, 5.2f),
                     doorMarkers = new List<BlockoutDoorMarker>
                     {
                         new BlockoutDoorMarker { label = "To 1.1", wall = WallSide.North, normalizedOffset = 0.82f },
@@ -87,8 +87,8 @@ namespace MuseumGame.Blockout
                 {
                     label = "Sala 4 - 1.5",
                     roomId = MuseumRoomId.Lights,
-                    position = new Vector2(5.4f, 0.0f),
-                    size = new Vector2(2.7f, 2.6f),
+                    position = new Vector2(6.75f, 0f),
+                    size = new Vector2(5.4f, 5.2f),
                     doorMarkers = new List<BlockoutDoorMarker>
                     {
                         new BlockoutDoorMarker { label = "To 1.3", wall = WallSide.West, normalizedOffset = 0.5f },
@@ -99,8 +99,8 @@ namespace MuseumGame.Blockout
                 {
                     label = "Sala 5 - 1.13",
                     roomId = MuseumRoomId.Minigames,
-                    position = new Vector2(5.4f, 7.2f),
-                    size = new Vector2(1.8f, 2.6f),
+                    position = new Vector2(6.75f, 12.4f),
+                    size = new Vector2(3.6f, 5.2f),
                     doorMarkers = new List<BlockoutDoorMarker>
                     {
                         new BlockoutDoorMarker { label = "To 1.5", wall = WallSide.South, normalizedOffset = 0.5f }
