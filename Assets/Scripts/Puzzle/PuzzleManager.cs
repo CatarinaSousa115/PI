@@ -155,7 +155,9 @@ public class PuzzleManager : MonoBehaviour
             if (rend != null) { center = _pieceContainer.InverseTransformPoint(rend.bounds.center); center.z = 0; }
         }
 
+        // Keep total puzzle size fixed, adapt piece size
         PieceSize = new Vector2(worldWidth / columns, worldHeight / rows);
+
         float startX = center.x - worldWidth / 2f + PieceSize.x / 2f + frameOffset.x * frameTransform.lossyScale.x;
         float startY = center.y - worldHeight / 2f + PieceSize.y / 2f + frameOffset.y * frameTransform.lossyScale.y;
 
