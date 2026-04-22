@@ -879,6 +879,8 @@ MonoBehaviour:
   worldEventDelay: 1.5
   interactionTrigger: {fileID: 1388973559}
   autoCloseDelay: 2.5
+  pieceDisplay: {fileID: 2042096511}
+  pieceIndexToUnlock: 5
 --- !u!1 &207388662
 GameObject:
   m_ObjectHideFlags: 0
@@ -8280,7 +8282,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 5ca803c9adc504acaa6cd0230eb343b3, type: 2}
   - {fileID: 2100000, guid: 4e38c8faa74074f3fac7b7953b4e6943, type: 2}
   piecesUnlocked: 0101010101000101010100010101010001010101000101010101
-  lockedMaterial: {fileID: 2100000, guid: 62ec3dd165a8b4ad1be08735cfb9c3f1, type: 2}
+  lockedMaterial: {fileID: 2100000, guid: 04063612fba134b59b941f6e5dbfb79a, type: 2}
   pieceWidth: 0.08
   pieceHeight: 0.1
   gap: -0.05

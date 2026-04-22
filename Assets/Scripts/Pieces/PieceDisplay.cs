@@ -35,11 +35,11 @@ public class PieceDisplay : MonoBehaviour
 
         int N = materials.Length;
         float totalWidth = N * pieceWidth + (N - 1) * gap;
-        float startX = -totalWidth / 2f + pieceWidth / 2f;
+        float startX = totalWidth / 2f - pieceWidth / 2f;
 
         for (int i = 0; i < N; i++)
         {
-            float x = startX + i * (pieceWidth + gap);
+            float x = startX - i * (pieceWidth + gap); 
             GameObject piece = Instantiate(piecePrefab, transform);
             piece.transform.localPosition = new Vector3(x, yPosition, zOffset);
             piece.transform.localScale = new Vector3(pieceWidth, pieceHeight, 0.05f);
