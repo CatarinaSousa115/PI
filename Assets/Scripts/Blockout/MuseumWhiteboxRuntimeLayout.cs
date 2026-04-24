@@ -16,6 +16,7 @@ namespace MuseumGame.Blockout
         [Header("Execution")]
         public bool applyLayoutOnAwake;
         public bool rebuildDoorwaysOnApply = true;
+        public bool rebuildCorridorsOnApply = true;
         public bool alignHelpersOnApply = true;
 
         [Header("Room Geometry")]
@@ -39,6 +40,18 @@ namespace MuseumGame.Blockout
         public float minimumDoorwayHeight = 2.1f;
         public Color doorColor = new Color(0.82f, 0.82f, 0.86f, 1f);
         public Material doorMaterial;
+
+        [Header("Corridors")]
+        public bool autoBuildCorridorsFromDoorNames = true;
+        public bool includeManualCorridorConnections;
+        public string generatedCorridorsRootName = "GeneratedCorridors";
+        public float defaultCorridorWidth = 1.4f;
+        public float defaultCorridorLeadLength = 0.7f;
+        public float minimumCorridorLength = 0.25f;
+        public bool createCorridorCeilings;
+        public Material corridorFloorMaterial;
+        public Material corridorWallMaterial;
+        public List<RuntimeCorridorConnection> corridorConnections = new List<RuntimeCorridorConnection>();
 
         [Header("Objects")]
         public string domPedroName = "DPedro";
@@ -68,6 +81,9 @@ namespace MuseumGame.Blockout
             if (rebuildDoorwaysOnApply)
                 RebuildDoorways();
 
+            if (rebuildCorridorsOnApply)
+                RebuildCorridors();
+
             if (alignHelpersOnApply)
             {
                 RepositionDomPedro();
@@ -86,19 +102,81 @@ namespace MuseumGame.Blockout
             RebuildDoorways();
         }
 
+        [ContextMenu("Rebuild Corridors Now")]
+        public void RebuildCorridorsNow()
+        {
+            EnsureDefaults();
+            RebuildCorridors();
+        }
+
+        [ContextMenu("Rebuild All Navigation Now")]
+        public void RebuildAllNavigationNow()
+        {
+            EnsureDefaults();
+            RebuildDoorways();
+            RebuildCorridors();
+        }
+
         private void EnsureDefaults()
         {
-            if (rooms.Count > 0)
-                return;
-
-            rooms = new List<RuntimeRoomLayout>
+            if (rooms.Count == 0)
             {
-                new RuntimeRoomLayout { roomName = "Lobby 1.1", center = new Vector2(5.7f, 6.6f), size = new Vector2(3.6f, 5.2f) },
-                new RuntimeRoomLayout { roomName = "Sala 2 - 1.2", center = new Vector2(0f, 6.6f), size = new Vector2(7.8f, 5.2f) },
-                new RuntimeRoomLayout { roomName = "Sala 3 - 1.3", center = new Vector2(0f, -1.3f), size = new Vector2(7.2f, 5.2f) },
-                new RuntimeRoomLayout { roomName = "Sala 4 - 1.5", center = new Vector2(11f, -1.3f), size = new Vector2(5.4f, 5.2f) },
-                new RuntimeRoomLayout { roomName = "Sala 5 - 1.13", center = new Vector2(11f, 6.5f), size = new Vector2(3.6f, 5.2f) }
-            };
+                rooms = new List<RuntimeRoomLayout>
+                {
+                    new RuntimeRoomLayout { roomName = "Lobby 1.1", center = new Vector2(5.7f, 6.6f), size = new Vector2(3.6f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 2 - 1.2", center = new Vector2(0f, 6.6f), size = new Vector2(7.8f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 3 - 1.3", center = new Vector2(0f, -1.3f), size = new Vector2(7.2f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 4 - 1.5", center = new Vector2(11f, -1.3f), size = new Vector2(5.4f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 5 - 1.13", center = new Vector2(11f, 6.5f), size = new Vector2(3.6f, 5.2f) }
+                };
+            }
+
+            if (corridorConnections.Count == 0)
+            {
+                corridorConnections = new List<RuntimeCorridorConnection>
+                {
+                    new RuntimeCorridorConnection
+                    {
+                        label = "Lobby_to_Sala2",
+                        fromRoomName = "Lobby 1.1",
+                        fromDoorName = "To 1.2",
+                        toRoomName = "Sala 2 - 1.2",
+                        toDoorName = "To 1.1"
+                    },
+                    new RuntimeCorridorConnection
+                    {
+                        label = "Lobby_to_Sala3",
+                        fromRoomName = "Lobby 1.1",
+                        fromDoorName = "To 1.3",
+                        toRoomName = "Sala 3 - 1.3",
+                        toDoorName = "To 1.1"
+                    },
+                    new RuntimeCorridorConnection
+                    {
+                        label = "Sala2_to_Sala3",
+                        fromRoomName = "Sala 2 - 1.2",
+                        fromDoorName = "To 1.3",
+                        toRoomName = "Sala 3 - 1.3",
+                        toDoorName = "To 1.2"
+                    },
+                    new RuntimeCorridorConnection
+                    {
+                        label = "Sala3_to_Sala4",
+                        fromRoomName = "Sala 3 - 1.3",
+                        fromDoorName = "To 1.5",
+                        toRoomName = "Sala 4 - 1.5",
+                        toDoorName = "To 1.3"
+                    },
+                    new RuntimeCorridorConnection
+                    {
+                        label = "Sala4_to_Sala5",
+                        fromRoomName = "Sala 4 - 1.5",
+                        fromDoorName = "To 1.13",
+                        toRoomName = "Sala 5 - 1.13",
+                        toDoorName = "To 1.5"
+                    }
+                };
+            }
         }
 
         private void ApplyLayouts()
@@ -137,6 +215,33 @@ namespace MuseumGame.Blockout
 
                 BlockoutDoorwayBuilder.RebuildRoom(room.transform, layout.size, settings);
             }
+        }
+
+        private void RebuildCorridors()
+        {
+            CorridorBuildSettings settings = new CorridorBuildSettings
+            {
+                generatedRootName = generatedCorridorsRootName,
+                markerPrefix = doorMarkerPrefix,
+                defaultWidth = defaultCorridorWidth,
+                defaultLeadLength = defaultCorridorLeadLength,
+                minimumCorridorLength = minimumCorridorLength,
+                wallHeight = wallHeight,
+                wallThickness = wallThickness,
+                floorThickness = floorThickness,
+                createCeilings = createCorridorCeilings,
+                floorMaterial = corridorFloorMaterial,
+                wallMaterial = corridorWallMaterial
+            };
+
+            List<RuntimeCorridorConnection> resolvedConnections = new List<RuntimeCorridorConnection>();
+            if (autoBuildCorridorsFromDoorNames)
+                resolvedConnections.AddRange(BlockoutCorridorBuilder.CreateConnectionsFromDoorNames(rooms, doorMarkerPrefix));
+
+            if (!autoBuildCorridorsFromDoorNames || includeManualCorridorConnections)
+                resolvedConnections.AddRange(corridorConnections);
+
+            BlockoutCorridorBuilder.Rebuild(transform, resolvedConnections, settings);
         }
 
         private DoorwayBuildSettings CreateDoorwayBuildSettings()

@@ -10674,6 +10674,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MuseumGame.Blockout.MuseumWhiteboxRuntimeLayout
   applyLayoutOnAwake: 0
   rebuildDoorwaysOnApply: 1
+  rebuildCorridorsOnApply: 1
   alignHelpersOnApply: 0
   wallHeight: 2.1
   wallThickness: 0.1
@@ -10708,6 +10709,56 @@ MonoBehaviour:
   minimumDoorwayHeight: 2.1
   doorColor: {r: 0.82, g: 0.82, b: 0.86, a: 1}
   doorMaterial: {fileID: 0}
+  autoBuildCorridorsFromDoorNames: 1
+  includeManualCorridorConnections: 0
+  generatedCorridorsRootName: GeneratedCorridors
+  defaultCorridorWidth: 1.4
+  defaultCorridorLeadLength: 0.7
+  minimumCorridorLength: 0.25
+  createCorridorCeilings: 0
+  corridorFloorMaterial: {fileID: 0}
+  corridorWallMaterial: {fileID: 0}
+  corridorConnections:
+  - label: Lobby_to_Sala2
+    fromRoomName: Lobby 1.1
+    fromDoorName: To 1.2
+    toRoomName: Sala 2 - 1.2
+    toDoorName: To 1.1
+    width: 1.4
+    leadLength: 0.7
+    pathMode: 0
+  - label: Lobby_to_Sala3
+    fromRoomName: Lobby 1.1
+    fromDoorName: To 1.3
+    toRoomName: Sala 3 - 1.3
+    toDoorName: To 1.1
+    width: 1.4
+    leadLength: 0.7
+    pathMode: 0
+  - label: Sala2_to_Sala3
+    fromRoomName: Sala 2 - 1.2
+    fromDoorName: To 1.3
+    toRoomName: Sala 3 - 1.3
+    toDoorName: To 1.2
+    width: 1.4
+    leadLength: 0.7
+    pathMode: 0
+  - label: Sala3_to_Sala4
+    fromRoomName: Sala 3 - 1.3
+    fromDoorName: To 1.5
+    toRoomName: Sala 4 - 1.5
+    toDoorName: To 1.3
+    width: 1.4
+    leadLength: 0.7
+    pathMode: 0
+  - label: Sala4_to_Sala5
+    fromRoomName: Sala 4 - 1.5
+    fromDoorName: To 1.13
+    toRoomName: Sala 5 - 1.13
+    toDoorName: To 1.5
+    width: 1.4
+    leadLength: 0.7
+    pathMode: 0
   domPedroName: QuadroDomPedro
   lobbyRoomName: Lobby 1.1
   lobbyMarkerName: Lobby 1.1 Marker
