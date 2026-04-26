@@ -3856,7 +3856,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Puzzle.PuzzleCameraController
   targetCamera: {fileID: 1851428855}
-  frameTransform: {fileID: 0}
+  frameTransform: {fileID: 1305838185}
   puzzleViewPoint: {fileID: 1699035571}
   cameraDistance: 1.5
   puzzleFOV: 40
@@ -4398,10 +4398,10 @@ MonoBehaviour:
   paintingTexture: {fileID: 2800000, guid: 2cdb1bb6a514b6387bbd41d7fd18f2fc, type: 3}
   columns: 3
   rows: 4
-  frameTransform: {fileID: 0}
+  frameTransform: {fileID: 1305838185}
   frameSize: {x: 0.66, y: 0.72}
   frameOffset: {x: -0.015, y: -0.01}
-  autoCenterOnMesh: 0
+  autoCenterOnMesh: 1
   piecePrefab: {fileID: 9111469636322617317, guid: 2be32a0b1edf3d83198f8b9c6eddf387, type: 3}
   scatterInsideFrame: 1
   scatterRadius: 0.3
@@ -7377,9 +7377,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0.55, y: 0.003, z: 0}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
+  m_LocalScale: {x: 0.3752331, y: 0.3752331, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8254494932859643131}
   m_Father: {fileID: 1907633850}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!64 &1305838186
@@ -7411,7 +7412,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1305838184}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -10360,7 +10361,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1305838185}
-  - {fileID: 8254494932859643131}
   - {fileID: 1388973561}
   - {fileID: 684265185}
   - {fileID: 663953262}
@@ -12378,7 +12378,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9e7ad7ad049f888e0b6201bcf255da6a, type: 2}
+  - {fileID: 2100000, guid: a4325261d7e394e17a8456f42309dc79, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -12509,12 +12509,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8774713864109178433}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.7, y: -0.174, z: -0.0053}
-  m_LocalScale: {x: 32, y: 48, z: 2000}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
+  m_LocalPosition: {x: -0.014124715, y: -0.4717068, z: -0.14999934}
+  m_LocalScale: {x: 82.845566, y: 127.92047, z: 2000}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1907633850}
+  m_Father: {fileID: 1305838185}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!4 &8287747822327902422
 Transform:
@@ -12667,6 +12667,8 @@ GameObject:
   - component: {fileID: 8254494932859643131}
   - component: {fileID: 4981545224574823262}
   - component: {fileID: 7117648617552453524}
+  - component: {fileID: 8774713864109178435}
+  - component: {fileID: 8774713864109178434}
   m_Layer: 0
   m_Name: Moldura
   m_TagString: Untagged
@@ -12674,6 +12676,49 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!65 &8774713864109178434
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8774713864109178433}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0095662335, y: 0.007249421, z: 0.00039342014}
+  m_Center: {x: -0.000024464922, y: 0.0036247105, z: -0.00003953187}
+--- !u!64 &8774713864109178435
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8774713864109178433}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3362887337151679087, guid: a73b7e5de868811bc9213a865b812785, type: 3}
 --- !u!1 &9135527090565951082
 GameObject:
   m_ObjectHideFlags: 0
