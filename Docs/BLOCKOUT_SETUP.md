@@ -54,6 +54,39 @@ Tambem funciona deixar o marcador como filho direto da sala, mas ai a logica pre
 
 O marcador fica como referencia/trigger, mas o renderer dele e escondido para nao sobrepor a porta. A parede original daquela face tambem fica escondida e e substituida pelos segmentos em `GeneratedDoorways`.
 
+## Corredores
+
+O jeito mais simples agora e deixar `Auto Build Corridors From Door Names` ligado no componente `MuseumWhiteboxRuntimeLayout`.
+
+Com isso, o corredor nasce dos nomes das portas:
+
+- A sala `Sala 3 - 1.3` precisa ter uma porta chamada `To 1.5` para ligar com a sala `Sala 4 - 1.5`.
+- A sala `Sala 4 - 1.5` precisa ter a porta de volta chamada `To 1.3`.
+- As duas portas devem ficar como filhas das paredes corretas.
+
+Depois e so usar `Rebuild All Navigation Now`. Primeiro as paredes sao recortadas pelas portas, depois os corredores sao criados em `GeneratedCorridors`.
+
+Se duas portas estiverem encostadas na mesma parede compartilhada, nenhum corredor extra e criado, porque a propria abertura ja conecta as salas. Isso evita aquele efeito de corredor voltando para dentro dos segmentos da parede.
+
+Para casos especiais, desligue `Auto Build Corridors From Door Names` ou ligue `Include Manual Corridor Connections` e use a lista `Corridor Connections`.
+
+Para conectar duas salas:
+
+1. Confirmar que as duas portas existem e estao como filhas das paredes corretas.
+2. No `MuseumWhiteboxRuntimeLayout`, adicionar um item em `Corridor Connections` apenas se for uma conexao manual.
+3. Preencher:
+   - `Label`: nome livre, por exemplo `Sala3_to_Sala4`
+   - `From Room Name`: sala de origem, por exemplo `Sala 3 - 1.3`
+   - `From Door Name`: porta de origem, por exemplo `To 1.5`
+   - `To Room Name`: sala de destino, por exemplo `Sala 4 - 1.5`
+   - `To Door Name`: porta de destino, por exemplo `To 1.3`
+   - `Width`: largura do corredor
+   - `Lead Length`: quanto o corredor sai reto da porta antes de virar
+   - `Path Mode`: `Auto` normalmente e suficiente
+4. Usar `Rebuild All Navigation Now`, ou `Rebuild Corridors Now` se as portas ja estiverem certas.
+
+Os corredores aparecem dentro de `GeneratedCorridors`. Se as portas estiverem alinhadas, o corredor fica reto. Se nao estiverem, `Auto` cria um caminho em L.
+
 ## Escala usada
 
 O layout base foi ajustado para estas medidas:

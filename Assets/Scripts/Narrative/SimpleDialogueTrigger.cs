@@ -293,7 +293,7 @@ namespace MuseumGame.Narrative
                 GameObject prompt = new GameObject("PromptText");
                 prompt.transform.SetParent(dialoguePanel.transform, false);
                 promptText = prompt.AddComponent<Text>();
-                promptText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                promptText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             }
 
             promptText.text = promptMessage;
@@ -325,7 +325,7 @@ namespace MuseumGame.Narrative
                 GameObject hint = new GameObject("DialogueHintText");
                 hint.transform.SetParent(canvasTransform, false);
                 interactionHintText = hint.AddComponent<Text>();
-                interactionHintText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                interactionHintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             }
 
             interactionHintText.text = interactionHintMessage;
