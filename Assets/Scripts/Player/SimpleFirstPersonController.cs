@@ -31,7 +31,14 @@ namespace MuseumGame.Player
 
         void Start()
         {
+            controller = GetComponent<CharacterController>();
+            if (controller != null) 
+            {
+                controller.enabled = true;
+                Debug.Log("[SimpleFPC] CharacterController enabled.");
+            }
             SetCursorState(lockCursorOnPlay);
+            Debug.Log($"[SimpleFPC] Started. Cursor locked: {lockCursorOnPlay}");
         }
 
         public void SetCursorState(bool locked)
@@ -42,7 +49,12 @@ namespace MuseumGame.Player
 
         void Update()
         {
-            if (!controller.enabled) return;
+            if (controller == null) return;
+            if (!controller.enabled) 
+            {
+                 // Try to re-enable if something disabled it
+                 controller.enabled = true;
+            }
 
             HandleLook();
             HandleMovement();
