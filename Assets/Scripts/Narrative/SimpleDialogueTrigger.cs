@@ -3,6 +3,9 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using MuseumGame;
 
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+
 namespace MuseumGame.Narrative
 {
     public class SimpleDialogueTrigger : MonoBehaviour
@@ -59,6 +62,23 @@ namespace MuseumGame.Narrative
 
             if (dialoguePanel != null)
                 dialoguePanel.SetActive(false);
+
+            // Regista os eventos XR
+            XRSimpleInteractable interactable = GetComponent<XRSimpleInteractable>();
+            if (interactable != null)
+            {
+                interactable.selectEntered.AddListener(OnXRInteract);
+            }
+        }
+
+        // Callback do XR — equivalente a premir E
+        private void OnXRInteract(SelectEnterEventArgs args)
+        {
+            bool canInteract = !requirePlayerTrigger || playerInside;
+            if (!canInteract) return;
+
+            if (!dialogueOpen) BeginDialogue();
+            else AdvanceDialogue();
         }
 
         void OnEnable()
@@ -71,14 +91,14 @@ namespace MuseumGame.Narrative
 
         void Update()
         {
-            bool canInteract = !requirePlayerTrigger || playerInside;
-            if (!canInteract || !Input.GetKeyDown(interactKey))
-                return;
-
-            if (!dialogueOpen)
-                BeginDialogue();
-            else
-                AdvanceDialogue();
+#if UNITY_EDITOR
+                bool canInteract = !requirePlayerTrigger || playerInside;
+                if (canInteract && Input.GetKeyDown(interactKey))
+                {
+                    if (!dialogueOpen) BeginDialogue();
+                    else AdvanceDialogue();
+                }
+#endif
         }
 
         void OnTriggerEnter(Collider other)
@@ -359,6 +379,13 @@ namespace MuseumGame.Narrative
 
             bool showHint = !dialogueOpen && (!requirePlayerTrigger || playerInside);
             interactionHintText.gameObject.SetActive(showHint);
+        }
+
+        void OnDestroy()
+        {
+            XRSimpleInteractable interactable = GetComponent<XRSimpleInteractable>();
+            if (interactable != null)
+                interactable.selectEntered.RemoveListener(OnXRInteract);
         }
     }
 }
