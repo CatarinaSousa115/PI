@@ -9,12 +9,29 @@ public class LipSync : MonoBehaviour
     public float activationDistance = 5f;
     public float activationAngle = 30f;
 
+    private bool isPaused = false;
+
+    void Start()
+    {
+        audioSource.dopplerLevel = 0f;
+        audioSource.Play();
+        audioSource.Pause();
+        isPaused = true;
+    }
+
     void Update()
     {
         if (IsPlayerLooking())
         {
             if (!audioSource.isPlaying)
-                audioSource.Play();
+            {
+                if (isPaused)
+                    audioSource.UnPause(); 
+                else
+                    audioSource.Play();
+
+                isPaused = false;
+            }
 
             float[] data = new float[256];
             audioSource.GetOutputData(data, 0);
@@ -29,7 +46,10 @@ public class LipSync : MonoBehaviour
         else
         {
             if (audioSource.isPlaying)
-                audioSource.Stop();
+            {
+                audioSource.Pause();
+                isPaused = true;
+            }
 
             skinnedMesh.SetBlendShapeWeight(0, 0);
         }
@@ -42,7 +62,6 @@ public class LipSync : MonoBehaviour
         float distance = Vector3.Distance(playerCamera.position, transform.position);
         if (distance > activationDistance) return false;
 
-        // quanto mais perto, maior o ângulo aceite
         float dynamicAngle = Mathf.Lerp(90f, activationAngle, distance / activationDistance);
 
         Vector3 dirToStatue = (transform.position - playerCamera.position).normalized;
