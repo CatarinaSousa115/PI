@@ -40,8 +40,8 @@ public class PuzzleManager : MonoBehaviour
     public AudioClip snapSound;
 
     public static PuzzleManager Instance { get; private set; }
-    public Vector3[,] SlotPositions { get; private set; } 
-    public Vector2 PieceSize { get; private set; } 
+    public Vector3[,] SlotPositions { get; private set; }
+    public Vector2 PieceSize { get; private set; }
     public int LockedCount { get; private set; }
     public int TotalPieces => columns * rows;
     public bool IsActive { get; private set; }
@@ -177,7 +177,7 @@ public class PuzzleManager : MonoBehaviour
                 // Slicing from bottom-left (Unity Standard)
                 Texture2D slice = SliceTexture(paintingTexture, c * pixW, r * pixH, pixW, pixH);
                 if (slice == null) continue;
-                
+
                 Sprite sprite = Sprite.Create(slice, new Rect(0, 0, slice.width, slice.height), new Vector2(0.5f, 0.5f), 100f);
                 GameObject go = Instantiate(piecePrefab, _pieceContainer, false);
                 go.name = $"Piece_{c}_{r}";
@@ -194,7 +194,7 @@ public class PuzzleManager : MonoBehaviour
                 go.transform.localPosition = slotPos;
                 // Also update the piece's stored home position to match:
                 go.GetComponent<BoxCollider>().size = new Vector3(sw, sh, 0.1f);
-    
+
                 var piece = go.GetComponent<PuzzlePiece>() ?? go.AddComponent<PuzzlePiece>();
                 piece.Initialise(new Vector2Int(c, r), slotPos);
                 var dragger = go.GetComponent<PuzzleDragger>() ?? go.AddComponent<PuzzleDragger>();
@@ -206,17 +206,24 @@ public class PuzzleManager : MonoBehaviour
 
     private void ScatterPieces()
     {
-        float worldWidth = frameSize.x * frameTransform.lossyScale.x;
-        float worldHeight = frameSize.y * frameTransform.lossyScale.y;
+        // Metade dos limites internos do frame em local space
+        float halfW = (frameSize.x * frameTransform.lossyScale.x) / 2f;
+        float halfH = (frameSize.y * frameTransform.lossyScale.y) / 2f;
+
+
+        float marginX = PieceSize.x / 2f;
+        float marginY = PieceSize.y / 2f;
+
         foreach (var go in _allPieces)
         {
             Vector3 pos = new Vector3(
-                Random.Range(-worldWidth / 2f, worldWidth / 2f),
-                Random.Range(-worldHeight / 2f, worldHeight / 2f),
+                Random.Range(-halfW + marginX, halfW - marginX),
+                Random.Range(-halfH + marginY, halfH - marginY),
                 -pieceDepthOffset - Random.Range(0f, 0.01f)
             );
             go.transform.localPosition = pos;
             go.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
+            go.GetComponent<SpriteRenderer>().sortingOrder = 5;
         }
     }
 

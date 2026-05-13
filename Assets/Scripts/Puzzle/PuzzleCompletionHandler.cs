@@ -59,6 +59,13 @@ namespace Puzzle
         [Tooltip("Delay before auto-closing the puzzle view after completion.")]
         public float autoCloseDelay = 2.5f;
 
+        [Header("Piece Display")]
+        [Tooltip("Objeto PiecesContainer que tem o script pieceDisplay.")]
+        public PieceDisplay pieceDisplay;
+
+        [Tooltip("Índice da peça a desbloquear (0-25).")]
+        public int pieceIndexToUnlock = 5;
+
         // ─────────────────────────────────────────────
         // Public: called by PuzzleManager.onPuzzleComplete
         // ─────────────────────────────────────────────
@@ -74,6 +81,10 @@ namespace Puzzle
 
         private IEnumerator CompletionSequence()
         {
+            // Desbloqueia a peça na parede do museu
+            if (pieceDisplay != null)
+                pieceDisplay.UnlockPiece(pieceIndexToUnlock);
+
             // 1. Glow effect
             if (frameRenderer != null)
                 StartCoroutine(GlowFrame());

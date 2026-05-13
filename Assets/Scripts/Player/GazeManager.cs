@@ -10,6 +10,7 @@ namespace MuseumGame.Player
 
         private global::GazeTeleport _currentGazeTarget;
         private Camera _camera;
+        private bool _isDisabled = false; // ← flag de bloqueio
 
         void Awake()
         {
@@ -19,22 +20,32 @@ namespace MuseumGame.Player
 
         void Update()
         {
+            if (_isDisabled) return; // ← para tudo durante teleporte
             HandleGaze();
+        }
+
+        // Chamado pelo GazeTeleport quando o teleporte começa
+        public void DisableGaze()
+        {
+            _isDisabled = true;
+            ClearGazeTarget();
         }
 
         private void HandleGaze()
         {
-            Ray ray = _camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
+            if (_camera == null) return;
 
-            // Debug line visible in Scene View
+            Ray ray = _camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+
+            // ← Proteção contra direção inválida
+            if (ray.direction.sqrMagnitude < 0.0001f) return;
+
             Debug.DrawRay(ray.origin, ray.direction * maxDistance, Color.yellow);
 
+            RaycastHit hit;
             if (Physics.Raycast(ray, out hit, maxDistance, interactableLayer))
             {
-                // Look for component on the hit object or its parents
                 global::GazeTeleport target = hit.collider.GetComponentInParent<global::GazeTeleport>();
-
                 if (target != null)
                 {
                     if (_currentGazeTarget != target)
@@ -47,11 +58,6 @@ namespace MuseumGame.Player
                 }
                 else
                 {
-                    if (hit.collider.gameObject != null)
-                    {
-                        // Log what we are hitting that ISN'T a target
-                        // Debug.Log($"[GazeManager] Hitting non-target: {hit.collider.gameObject.name}");
-                    }
                     ClearGazeTarget();
                 }
             }

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Puzzle
   - PuzzleCamera
+  - Target
   layers:
   - Default
   - TransparentFX

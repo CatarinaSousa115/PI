@@ -59,7 +59,7 @@ public class PuzzleDragger : MonoBehaviour
     {
         if (piece == null || piece.IsLocked) return;
 
-        if (_sr != null) _sr.sortingOrder = 1;
+        if (_sr != null) _sr.sortingOrder = 5;
 
         TrySnapToBoard();
     }
