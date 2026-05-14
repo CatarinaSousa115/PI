@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using MuseumGame.Player;
+using MuseumGame.Blockout;
 
 public class GazeTeleport : MonoBehaviour
 {
@@ -32,7 +33,7 @@ public class GazeTeleport : MonoBehaviour
 
     void Update()
     {
-        if (_isTeleporting) return; // ← bloqueia durante teleporte
+        if (_isTeleporting) return;
 
         if (isPlayerLooking)
         {
@@ -101,7 +102,7 @@ public class GazeTeleport : MonoBehaviour
         _isTeleporting = true;
         isPlayerLooking = false;
 
-        GazeManager gazeManager = FindFirstObjectByType<GazeManager>(); // ← corrigido
+        GazeManager gazeManager = FindFirstObjectByType<GazeManager>();
         if (gazeManager != null) gazeManager.DisableGaze();
 
         Debug.Log("Teleporting to scene: " + sceneToLoad);
@@ -112,13 +113,16 @@ public class GazeTeleport : MonoBehaviour
     private System.Collections.IEnumerator LoadSceneDelayed()
     {
         yield return new WaitForEndOfFrame();
-        
+
+        // FIX: limpa os corredores antes de mudar de cena para que não
+        // vazem da LobbyScene para a PaintingScene (ou qualquer outra).
+        var layout = FindFirstObjectByType<MuseumWhiteboxRuntimeLayout>();
+        if (layout != null) layout.ClearCorridors();
+
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneToLoad);
         op.allowSceneActivation = false;
-
         yield return null;
         yield return null;
-
         op.allowSceneActivation = true;
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace MuseumGame.Blockout
 {
@@ -64,6 +65,9 @@ namespace MuseumGame.Blockout
         public string tpRoom4Name = "TP_Sala4";
         public string tpRoom5Name = "TP_Sala5";
 
+        // Referência ao root dos corredores — criado na cena ativa, não como filho deste objeto
+        private GameObject _corridorsRoot;
+
         private void Awake()
         {
             if (!applyLayoutOnAwake)
@@ -117,17 +121,36 @@ namespace MuseumGame.Blockout
             RebuildCorridors();
         }
 
+        /// <summary>
+        /// Destrói os corredores gerados. Chama isto antes de qualquer transição de cena.
+        /// </summary>
+        public void ClearCorridors()
+        {
+            if (_corridorsRoot != null)
+            {
+                Destroy(_corridorsRoot);
+                _corridorsRoot = null;
+            }
+            else
+            {
+                // Fallback: caso a referência se tenha perdido (ex: domain reload no Editor)
+                GameObject existing = GameObject.Find(generatedCorridorsRootName);
+                if (existing != null)
+                    Destroy(existing);
+            }
+        }
+
         private void EnsureDefaults()
         {
             if (rooms.Count == 0)
             {
                 rooms = new List<RuntimeRoomLayout>
                 {
-                    new RuntimeRoomLayout { roomName = "Lobby 1.1", center = new Vector2(5.7f, 6.6f), size = new Vector2(3.6f, 5.2f) },
-                    new RuntimeRoomLayout { roomName = "Sala 2 - 1.2", center = new Vector2(0f, 6.6f), size = new Vector2(7.8f, 5.2f) },
-                    new RuntimeRoomLayout { roomName = "Sala 3 - 1.3", center = new Vector2(0f, -1.3f), size = new Vector2(7.2f, 5.2f) },
-                    new RuntimeRoomLayout { roomName = "Sala 4 - 1.5", center = new Vector2(11f, -1.3f), size = new Vector2(5.4f, 5.2f) },
-                    new RuntimeRoomLayout { roomName = "Sala 5 - 1.13", center = new Vector2(11f, 6.5f), size = new Vector2(3.6f, 5.2f) }
+                    new RuntimeRoomLayout { roomName = "Lobby 1.1",       center = new Vector2(5.7f, 6.6f),  size = new Vector2(3.6f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 2 - 1.2",    center = new Vector2(0f,   6.6f),  size = new Vector2(7.8f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 3 - 1.3",    center = new Vector2(0f,  -1.3f),  size = new Vector2(7.2f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 4 - 1.5",    center = new Vector2(11f, -1.3f),  size = new Vector2(5.4f, 5.2f) },
+                    new RuntimeRoomLayout { roomName = "Sala 5 - 1.13",   center = new Vector2(11f,  6.5f),  size = new Vector2(3.6f, 5.2f) }
                 };
             }
 
@@ -135,46 +158,11 @@ namespace MuseumGame.Blockout
             {
                 corridorConnections = new List<RuntimeCorridorConnection>
                 {
-                    new RuntimeCorridorConnection
-                    {
-                        label = "Lobby_to_Sala2",
-                        fromRoomName = "Lobby 1.1",
-                        fromDoorName = "To 1.2",
-                        toRoomName = "Sala 2 - 1.2",
-                        toDoorName = "To 1.1"
-                    },
-                    new RuntimeCorridorConnection
-                    {
-                        label = "Lobby_to_Sala3",
-                        fromRoomName = "Lobby 1.1",
-                        fromDoorName = "To 1.3",
-                        toRoomName = "Sala 3 - 1.3",
-                        toDoorName = "To 1.1"
-                    },
-                    new RuntimeCorridorConnection
-                    {
-                        label = "Sala2_to_Sala3",
-                        fromRoomName = "Sala 2 - 1.2",
-                        fromDoorName = "To 1.3",
-                        toRoomName = "Sala 3 - 1.3",
-                        toDoorName = "To 1.2"
-                    },
-                    new RuntimeCorridorConnection
-                    {
-                        label = "Sala3_to_Sala4",
-                        fromRoomName = "Sala 3 - 1.3",
-                        fromDoorName = "To 1.5",
-                        toRoomName = "Sala 4 - 1.5",
-                        toDoorName = "To 1.3"
-                    },
-                    new RuntimeCorridorConnection
-                    {
-                        label = "Sala4_to_Sala5",
-                        fromRoomName = "Sala 4 - 1.5",
-                        fromDoorName = "To 1.13",
-                        toRoomName = "Sala 5 - 1.13",
-                        toDoorName = "To 1.5"
-                    }
+                    new RuntimeCorridorConnection { label = "Lobby_to_Sala2", fromRoomName = "Lobby 1.1",    fromDoorName = "To 1.2", toRoomName = "Sala 2 - 1.2", toDoorName = "To 1.1" },
+                    new RuntimeCorridorConnection { label = "Lobby_to_Sala3", fromRoomName = "Lobby 1.1",    fromDoorName = "To 1.3", toRoomName = "Sala 3 - 1.3", toDoorName = "To 1.1" },
+                    new RuntimeCorridorConnection { label = "Sala2_to_Sala3", fromRoomName = "Sala 2 - 1.2", fromDoorName = "To 1.3", toRoomName = "Sala 3 - 1.3", toDoorName = "To 1.2" },
+                    new RuntimeCorridorConnection { label = "Sala3_to_Sala4", fromRoomName = "Sala 3 - 1.3", fromDoorName = "To 1.5", toRoomName = "Sala 4 - 1.5", toDoorName = "To 1.3" },
+                    new RuntimeCorridorConnection { label = "Sala4_to_Sala5", fromRoomName = "Sala 4 - 1.5", fromDoorName = "To 1.13",toRoomName = "Sala 5 - 1.13",toDoorName = "To 1.5" }
                 };
             }
         }
@@ -241,7 +229,15 @@ namespace MuseumGame.Blockout
             if (!autoBuildCorridorsFromDoorNames || includeManualCorridorConnections)
                 resolvedConnections.AddRange(corridorConnections);
 
-            BlockoutCorridorBuilder.Rebuild(transform, resolvedConnections, settings);
+            // FIX: cria o root na cena ativa em vez de como filho deste objeto persistente.
+            // Assim os corredores são destruídos automaticamente na transição de cena.
+            if (_corridorsRoot == null)
+            {
+                _corridorsRoot = new GameObject(generatedCorridorsRootName);
+                SceneManager.MoveGameObjectToScene(_corridorsRoot, SceneManager.GetActiveScene());
+            }
+
+            BlockoutCorridorBuilder.Rebuild(_corridorsRoot.transform, resolvedConnections, settings);
         }
 
         private DoorwayBuildSettings CreateDoorwayBuildSettings()
