@@ -60,6 +60,7 @@
     <Compile Include="Assets/VRTemplateAssets/Scripts/HandSubsystemManager.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/DestroyObject.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/VideoTimeScrubControl.cs" />
+    <Compile Include="Assets/Textures/Estatuas/TopColorCube.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/Callout.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/CalloutGazeController.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/StepManager.cs" />
@@ -84,6 +85,7 @@
     <None Include="Assets/TextMesh Pro/Shaders/TMPro_Properties.cginc" />
     <None Include="Assets/TextMesh Pro/Shaders/TMPro_Surface.cginc" />
     <None Include="Assets/TextMesh Pro/Resources/LineBreaking Following Characters.txt" />
+    <None Include="Assets/Materials/DoubleSideUnlit.shader" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_SDF Overlay.shader" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_Bitmap-Mobile.shader" />
@@ -1528,8 +1530,10 @@
     <ProjectReference Include="Unity.XR.Interaction.Toolkit.Samples.StarterAssets.csproj" />
     <ProjectReference Include="Unity.XR.Interaction.Toolkit.Samples.Hands.csproj" />
     <ProjectReference Include="Unity.XR.Hands.Samples.VisualizerSample.csproj" />
+    <ProjectReference Include="Unity.XR.Interaction.Toolkit.Samples.InteractionSimulator.Editor.csproj" />
     <ProjectReference Include="Unity.XR.Interaction.Toolkit.Samples.StarterAssets.Editor.csproj" />
     <ProjectReference Include="Unity.XR.Interaction.Toolkit.Samples.Hands.Editor.csproj" />
+    <ProjectReference Include="Unity.XR.Interaction.Toolkit.Samples.InteractionSimulator.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
