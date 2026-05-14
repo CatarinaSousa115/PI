@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using MuseumGame.Player;
 using MuseumGame.Blockout;
+using System.Collections;
 
 public class GazeTeleport : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class GazeTeleport : MonoBehaviour
 
     private float timer = 0f;
     private bool isPlayerLooking = false;
-    private bool _isTeleporting = false; 
+    private bool _isTeleporting = false;
     private Renderer _activeRenderer;
     private Color _originalColor;
     private bool _hasEmission;
@@ -40,7 +41,6 @@ public class GazeTeleport : MonoBehaviour
             timer += Time.deltaTime;
             if (loadingBar != null)
                 loadingBar.fillAmount = timer / gazeTime;
-
             if (timer >= gazeTime)
                 Teleport();
         }
@@ -96,7 +96,7 @@ public class GazeTeleport : MonoBehaviour
     private void Teleport()
     {
         if (string.IsNullOrWhiteSpace(sceneToLoad)) return;
-        if (SceneManager.GetActiveScene().name == sceneToLoad) return;
+        if (SceneManager.GetSceneByName(sceneToLoad).isLoaded) return;
         if (_isTeleporting) return;
 
         _isTeleporting = true;
@@ -107,22 +107,35 @@ public class GazeTeleport : MonoBehaviour
 
         Debug.Log("Teleporting to scene: " + sceneToLoad);
         Time.timeScale = 1f;
-        StartCoroutine(LoadSceneDelayed());
+        StartCoroutine(LoadSceneAdditive());
     }
 
-    private System.Collections.IEnumerator LoadSceneDelayed()
+    private IEnumerator LoadSceneAdditive()
     {
         yield return new WaitForEndOfFrame();
 
-        // FIX: limpa os corredores antes de mudar de cena para que não
-        // vazem da LobbyScene para a PaintingScene (ou qualquer outra).
+        Scene currentScene = SceneManager.GetActiveScene();
+        foreach (GameObject obj in currentScene.GetRootGameObjects())
+        {
+            // Não desativas o XR Origin nem o GameManager!
+            if (obj.name == "XR Origin (XR Rig)" ||
+                obj.name == "GameManager" ||
+                obj.name == "DontDestroyOnLoad")
+                continue;
+
+            obj.SetActive(false);
+        }
+
         var layout = FindFirstObjectByType<MuseumWhiteboxRuntimeLayout>();
         if (layout != null) layout.ClearCorridors();
 
-        AsyncOperation op = SceneManager.LoadSceneAsync(sceneToLoad);
+        AsyncOperation op = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
         op.allowSceneActivation = false;
         yield return null;
         yield return null;
         op.allowSceneActivation = true;
+
+        yield return new WaitUntil(() => op.isDone);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
     }
 }
