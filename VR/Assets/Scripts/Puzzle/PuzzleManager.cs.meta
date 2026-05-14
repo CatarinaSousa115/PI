@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: e4bbb420c6a043ed986f75a5e67db2c9
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - paintingMaterial: {fileID: 2100000, guid: cf5e53558d82151778639ab87fc96e0e, type: 2}
+  - scatterRoot: {instanceID: 0}
+  - scatterHighlight: {instanceID: 0}
+  - boardHighlight: {instanceID: 0}
+  - linkedRoom: {instanceID: 0}
+  - frameCenter: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
