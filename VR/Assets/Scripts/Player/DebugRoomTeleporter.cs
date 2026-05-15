@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Unity.XR.CoreUtils;
 
 namespace MuseumGame.Player
 {
@@ -11,13 +13,6 @@ namespace MuseumGame.Player
         public Transform room4Point;
         public Transform room5Point;
 
-        [Header("Controls")]
-        public KeyCode lobbyKey = KeyCode.Alpha1;
-        public KeyCode room2Key = KeyCode.Alpha2;
-        public KeyCode room3Key = KeyCode.Alpha3;
-        public KeyCode room4Key = KeyCode.Alpha4;
-        public KeyCode room5Key = KeyCode.Alpha5;
-
         [Header("Settings")]
         public CharacterController characterController;
         public float verticalOffset = 0.1f;
@@ -28,6 +23,13 @@ namespace MuseumGame.Player
         public string room4MarkerName = "Sala 4 - 1.5 Marker";
         public string room5MarkerName = "Sala 5 - 1.13 Marker";
 
+        public XROrigin xrOrigin;
+        public InputActionProperty teleportLobbyAction;
+        public InputActionProperty teleportRoom2Action;
+        public InputActionProperty teleportRoom3Action;
+        public InputActionProperty teleportRoom4Action;
+        public InputActionProperty teleportRoom5Action;
+
         void Awake()
         {
             if (characterController == null)
@@ -35,19 +37,22 @@ namespace MuseumGame.Player
 
             if (autoResolveMarkers)
                 ResolveMarkers();
+
+            if (xrOrigin == null)
+                xrOrigin = FindFirstObjectByType<XROrigin>();
         }
 
         void Update()
         {
-            if (Input.GetKeyDown(lobbyKey))
+            if (teleportLobbyAction.action != null && teleportLobbyAction.action.WasPressedThisFrame())
                 TeleportTo(lobbyPoint);
-            else if (Input.GetKeyDown(room2Key))
+            else if (teleportRoom2Action.action != null && teleportRoom2Action.action.WasPressedThisFrame())
                 TeleportTo(room2Point);
-            else if (Input.GetKeyDown(room3Key))
+            else if (teleportRoom3Action.action != null && teleportRoom3Action.action.WasPressedThisFrame())
                 TeleportTo(room3Point);
-            else if (Input.GetKeyDown(room4Key))
+            else if (teleportRoom4Action.action != null && teleportRoom4Action.action.WasPressedThisFrame())
                 TeleportTo(room4Point);
-            else if (Input.GetKeyDown(room5Key))
+            else if (teleportRoom5Action.action != null && teleportRoom5Action.action.WasPressedThisFrame())
                 TeleportTo(room5Point);
         }
 
@@ -61,8 +66,16 @@ namespace MuseumGame.Player
             if (characterController != null)
                 characterController.enabled = false;
 
-            transform.position = destination;
-            transform.rotation = targetPoint.rotation;
+            if (xrOrigin != null)
+            {
+                xrOrigin.transform.position = destination;
+                xrOrigin.transform.rotation = targetPoint.rotation;
+            }
+            else
+            {
+                transform.position = destination;
+                transform.rotation = targetPoint.rotation;
+            }
 
             if (characterController != null)
                 characterController.enabled = true;

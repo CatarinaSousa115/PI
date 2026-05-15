@@ -2,13 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using MuseumGame.Player;
 
 public class PuzzleManager : MonoBehaviour
 {
     [Header("Player & Mode")]
     public GameObject playerObject;
-    private MonoBehaviour playerScript;
 
     [Header("Puzzle Setup")]
     public Texture2D paintingTexture;
@@ -49,8 +47,6 @@ public class PuzzleManager : MonoBehaviour
     private List<GameObject> _allPieces = new List<GameObject>();
     private Dictionary<Vector2Int, PuzzleDragger> _pieceMap = new Dictionary<Vector2Int, PuzzleDragger>();
     private AudioSource _audio;
-    private PuzzleDragger _currentDragger;
-    private Camera _puzzleCam;
 
     private void Awake()
     {
@@ -61,60 +57,20 @@ public class PuzzleManager : MonoBehaviour
 
     private void Start()
     {
-        if (playerObject == null)
-        {
-            var fp = Object.FindFirstObjectByType<SimpleFirstPersonController>();
-            if (fp != null) playerObject = fp.gameObject;
-        }
-        if (playerObject != null) playerScript = playerObject.GetComponent<SimpleFirstPersonController>();
-        _puzzleCam = Camera.main;
         StartPuzzle();
-    }
-
-    private void Update()
-    {
-        if (!IsActive) return;
-        HandleInput();
-    }
-
-    private void HandleInput()
-    {
-        if (_puzzleCam == null) _puzzleCam = Camera.main;
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = _puzzleCam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
-            {
-                var dragger = hit.collider.GetComponent<PuzzleDragger>();
-                if (dragger != null && !dragger.piece.IsLocked)
-                {
-                    _currentDragger = dragger;
-                    _currentDragger.StartDragging(ray);
-                }
-            }
-        }
-        if (Input.GetMouseButton(0) && _currentDragger != null)
-            _currentDragger.FollowMouse(_puzzleCam.ScreenPointToRay(Input.mousePosition));
-        if (Input.GetMouseButtonUp(0) && _currentDragger != null)
-        {
-            _currentDragger.StopDragging();
-            _currentDragger = null;
-        }
     }
 
     public void EnterPuzzleMode()
     {
         IsActive = true;
-        if (playerScript != null) { playerScript.enabled = false; playerObject.GetComponent<CharacterController>().enabled = false; }
-        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
-        if (_allPieces.Count == 0) StartPuzzle();
+
+        if (_allPieces.Count == 0)
+            StartPuzzle();
     }
 
     public void ExitPuzzleMode()
     {
         IsActive = false;
-        if (playerScript != null) { playerScript.enabled = true; playerObject.GetComponent<CharacterController>().enabled = true; }
-        Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
     }
 
     public void StartPuzzle()

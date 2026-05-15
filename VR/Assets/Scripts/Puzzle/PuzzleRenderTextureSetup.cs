@@ -73,7 +73,7 @@ namespace Puzzle
             {
                 Transform frame = PuzzleManager.Instance.frameTransform;
                 puzzleCamera.transform.position = frame.position - frame.forward * 0.5f;
-                puzzleCamera.transform.rotation = Quaternion.LookRotation(frame.forward);
+                puzzleCamera.transform.rotation = Quaternion.LookRotation(frame.forward, Vector3.up);
             }
         }
 

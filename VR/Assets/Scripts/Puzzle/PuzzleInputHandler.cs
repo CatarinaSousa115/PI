@@ -1,28 +1,36 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PuzzleInputHandler : MonoBehaviour
 {
-    public Camera puzzleCamera;
-    private PuzzleDragger _currentDragger;
+    [Header("VR Input")]
+    public Transform rayOrigin;
+    public InputActionProperty triggerAction;
+    public float rayDistance = 10f;
 
-    void Start()
-    {
-        if (puzzleCamera == null) puzzleCamera = Camera.main;
-    }
+    private PuzzleDragger _currentDragger;
+    private bool _wasPressedLastFrame;
 
     void Update()
     {
-        if (PuzzleManager.Instance == null || !PuzzleManager.Instance.IsActive) return;
+        if (PuzzleManager.Instance == null || !PuzzleManager.Instance.IsActive)
+            return;
 
-        if (Input.GetMouseButtonDown(0))
+        if (rayOrigin == null)
+            return;
+
+        Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+
+        bool pressed = triggerAction.action != null && triggerAction.action.IsPressed();
+
+        if (pressed && !_wasPressedLastFrame)
         {
-            Ray ray = puzzleCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit,100f))
+            if (Physics.Raycast(ray, out RaycastHit hit, rayDistance))
             {
-                Debug.Log($"[Raycast] Hit: {hit.collider.gameObject.name}");
-
+                Debug.Log($"[VR Raycast] Hit: {hit.collider.gameObject.name}");
 
                 var dragger = hit.collider.GetComponent<PuzzleDragger>();
+
                 if (dragger != null && !dragger.piece.IsLocked)
                 {
                     _currentDragger = dragger;
@@ -31,19 +39,21 @@ public class PuzzleInputHandler : MonoBehaviour
             }
             else
             {
-                Debug.Log("[Raycast] Hit: absolutely nothing.");
+                Debug.Log("[VR Raycast] Hit: absolutely nothing.");
             }
         }
 
-        if (Input.GetMouseButton(0) && _currentDragger != null)
+        if (pressed && _currentDragger != null)
         {
-            _currentDragger.FollowMouse(puzzleCamera.ScreenPointToRay(Input.mousePosition));
+            _currentDragger.FollowRay(ray);
         }
 
-        if (Input.GetMouseButtonUp(0) && _currentDragger != null)
+        if (!pressed && _wasPressedLastFrame && _currentDragger != null)
         {
             _currentDragger.StopDragging();
             _currentDragger = null;
         }
+
+        _wasPressedLastFrame = pressed;
     }
 }

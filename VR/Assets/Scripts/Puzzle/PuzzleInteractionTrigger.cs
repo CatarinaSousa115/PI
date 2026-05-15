@@ -1,17 +1,18 @@
+using UnityEngine.InputSystem;
 using UnityEngine;
 using TMPro;
 
 public class PuzzleInteractionTrigger : MonoBehaviour
 {
     [Header("Interaction")]
-    public KeyCode interactKey = KeyCode.E;
     public string playerTag = "Player";
+    public InputActionProperty interactAction;
 
     [Header("UI Prompt")]
     public GameObject promptUI;
     public TextMeshProUGUI promptText;
-    public string enterText = "Press [E] to inspect painting";
-    public string exitText = "Press [E] to step back";
+    public string enterText = "Press Trigger to inspect painting";
+    public string exitText = "Press Trigger to step back";
 
     [Header("Scene References")]
     public PuzzleManager puzzleManager;
@@ -45,13 +46,19 @@ public class PuzzleInteractionTrigger : MonoBehaviour
 
     private void Update()
     {
-        if (!_playerInRange) return;
+        if (!_playerInRange)
+            return;
 
-        if (Input.GetKeyDown(interactKey))
+        bool interactPressed = interactAction.action != null && interactAction.action.WasPressedThisFrame();
+
+        if (interactPressed)
         {
-            Debug.Log($"[PuzzleTrigger] Interact key pressed. Open: {!_puzzleOpen}");
-            if (!_puzzleOpen) OpenPuzzle();
-            else ClosePuzzle();
+            Debug.Log($"[PuzzleTrigger] Interact pressed. Open: {!_puzzleOpen}");
+
+            if (!_puzzleOpen)
+                OpenPuzzle();
+            else
+                ClosePuzzle();
         }
     }
 
@@ -80,9 +87,6 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         DisablePlayerMovement();
         SetPlayerVisible(false);
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
         puzzleManager?.EnterPuzzleMode();
 
         ShowPrompt(exitText);
@@ -95,9 +99,6 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         cameraController?.TransitionToPlayerView();
         EnablePlayerMovement();
         SetPlayerVisible(true);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
 
         puzzleManager?.ExitPuzzleMode();
 

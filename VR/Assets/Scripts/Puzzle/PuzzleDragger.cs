@@ -39,7 +39,7 @@ public class PuzzleDragger : MonoBehaviour
         }
     }
 
-    public void FollowMouse(Ray ray)
+    public void FollowRay(Ray ray)
     {
         if (piece == null || piece.IsLocked) return;
 

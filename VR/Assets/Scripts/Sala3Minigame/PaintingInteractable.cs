@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
 /// Attach to each painting GameObject.
@@ -32,6 +34,7 @@ public class PaintingInteractable : MonoBehaviour
     private bool _isPlaying = false;
     private Material _originalMaterial;
     private AudioSource _audio;
+    private XRSimpleInteractable _xrInteractable;
 
     // ──────────────────────────────────────────────
     // Unity lifecycle
@@ -46,11 +49,23 @@ public class PaintingInteractable : MonoBehaviour
         _audio.spatialBlend = 1f; // 3D audio — sound comes from the painting
         _audio.playOnAwake = false;
 
+        _xrInteractable = GetComponent<XRSimpleInteractable>();
+
+        if (_xrInteractable == null)
+            _xrInteractable = gameObject.AddComponent<XRSimpleInteractable>();
+
+        _xrInteractable.selectEntered.AddListener(OnXRInteract);
+
         if (paintingRenderer != null)
             _originalMaterial = paintingRenderer.material;
 
         // Paintings start locked until the minigame begins
         SetInteractable(false);
+    }
+
+    private void OnXRInteract(SelectEnterEventArgs args)
+    {
+        Interact();
     }
 
     // ──────────────────────────────────────────────
@@ -128,5 +143,11 @@ public class PaintingInteractable : MonoBehaviour
     {
         Debug.Log($"[Painting: {name}] ❌ Wrong order — sequence reset.");
         // TODO: Add a "wrong" sound effect, screen flash, or controller rumble here
+    }
+
+    private void OnDestroy()
+    {
+        if (_xrInteractable != null)
+            _xrInteractable.selectEntered.RemoveListener(OnXRInteract);
     }
 }

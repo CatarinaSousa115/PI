@@ -25,8 +25,8 @@ namespace MuseumGame.Narrative
         [Header("Look")]
         public bool autoResolveUiReferences = true;
         public bool autoStyleDialogue = true;
-        public string promptMessage = "Pressiona E para continuar";
-        public string interactionHintMessage = "Pressiona E para falar";
+        public string promptMessage = "Pressiona Trigger para continuar";
+        public string interactionHintMessage = "Pressiona Trigger para falar";
         public Color panelColor = new Color(0.06f, 0.08f, 0.12f, 0.88f);
         public Color speakerColor = new Color(0.96f, 0.84f, 0.56f, 1f);
         public Color bodyColor = new Color(0.96f, 0.97f, 0.98f, 1f);
@@ -34,7 +34,6 @@ namespace MuseumGame.Narrative
         public Color interactionHintColor = new Color(0.98f, 0.98f, 1f, 0.96f);
 
         [Header("Interaction")]
-        public KeyCode interactKey = KeyCode.E;
         public bool requirePlayerTrigger = true;
         public bool oneShot = true;
 
@@ -65,10 +64,9 @@ namespace MuseumGame.Narrative
 
             // Regista os eventos XR
             XRSimpleInteractable interactable = GetComponent<XRSimpleInteractable>();
-            if (interactable != null)
-            {
-                interactable.selectEntered.AddListener(OnXRInteract);
-            }
+            if (interactable == null)
+                interactable = gameObject.AddComponent<XRSimpleInteractable>();
+            interactable.selectEntered.AddListener(OnXRInteract);
         }
 
         // Callback do XR — equivalente a premir E
@@ -87,18 +85,6 @@ namespace MuseumGame.Narrative
 
             if (dialoguePanel != null && !dialogueOpen)
                 dialoguePanel.SetActive(false);
-        }
-
-        void Update()
-        {
-#if UNITY_EDITOR
-                bool canInteract = !requirePlayerTrigger || playerInside;
-                if (canInteract && Input.GetKeyDown(interactKey))
-                {
-                    if (!dialogueOpen) BeginDialogue();
-                    else AdvanceDialogue();
-                }
-#endif
         }
 
         void OnTriggerEnter(Collider other)

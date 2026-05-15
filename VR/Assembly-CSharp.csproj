@@ -49,22 +49,52 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/BuildPipeline/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Scripts/Blockout/BlockoutDoorwayBuilder.cs" />
+    <Compile Include="Assets/Scripts/Core/RoomCompletionListener.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleRenderTextureSetup.cs" />
+    <Compile Include="Assets/Scripts/Core/MuseumRoomId.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/VideoPlayerRenderTexture.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/Rotator.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/XRKnob.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/BooleanToggleVisualsController.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/RayAttachModifier.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/XRPokeFollowAffordanceFill.cs" />
+    <Compile Include="Assets/Scripts/Core/FinalCollectionManager.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzlePiece.cs" />
+    <Compile Include="Assets/Scripts/Core/MuseumRoom.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleManager.cs" />
+    <Compile Include="Assets/Scripts/Sala3Minigame/RoomTrigger.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/BezierCurve.cs" />
+    <Compile Include="Assets/Scripts/Core/MuseumHud.cs" />
+    <Compile Include="Assets/Scripts/Sala3Minigame/StatueController.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/LaunchProjectile.cs" />
+    <Compile Include="Assets/Scripts/Core/PlaqueSocket.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/HandSubsystemManager.cs" />
+    <Compile Include="Assets/Scripts/Core/MuseumGameManager.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/DestroyObject.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/VideoTimeScrubControl.cs" />
+    <Compile Include="Assets/Scripts/Sala3Minigame/MinigameManager.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleCameraController.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleInteractionTrigger.cs" />
+    <Compile Include="Assets/Scripts/Narrative/SimpleDialogueTrigger.cs" />
+    <Compile Include="Assets/Scripts/Core/ScenePortal.cs" />
+    <Compile Include="Assets/Scripts/Pieces/PieceDisplay.cs" />
+    <Compile Include="Assets/Scripts/Blockout/BlockoutCorridorBuilder.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleCompletionHandler.cs" />
     <Compile Include="Assets/Textures/Estatuas/TopColorCube.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/Callout.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/CalloutGazeController.cs" />
+    <Compile Include="Assets/Scripts/Blockout/MuseumWhiteboxRuntimeLayout.cs" />
+    <Compile Include="Assets/Scripts/UI/HudLayoutBootstrap.cs" />
+    <Compile Include="Assets/Scripts/Player/DebugRoomTeleporter.cs" />
+    <Compile Include="Assets/Scripts/Estatuas/LipSync.cs" />
+    <Compile Include="Assets/Scripts/Sala3Minigame/PaintingInteractable.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/StepManager.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleInputHandler.cs" />
+    <Compile Include="Assets/Scripts/Puzzle/PuzzleDragger.cs" />
+    <Compile Include="Assets/Scripts/Blockout/MuseumBlockoutGenerator.cs" />
     <Compile Include="Assets/VRTemplateAssets/Scripts/AnchorVisuals.cs" />
+    <Compile Include="Assets/Scripts/Narrative/LobbyIntroController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/TextMesh Pro/Shaders/TMPro.cginc" />
