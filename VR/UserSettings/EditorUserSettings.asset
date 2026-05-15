@@ -17,6 +17,9 @@ EditorUserSettings:
     lightmappingBakingProfile:
       value: 51
       flags: 0
+    lightmappingDeviceIndex:
+      value: 52
+      flags: 0
     vcSharedLogLevel:
       value: 0d5e400f0650
       flags: 0
