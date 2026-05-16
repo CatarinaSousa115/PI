@@ -29,7 +29,7 @@ public class PuzzleManager : MonoBehaviour
     [Header("Scatter Settings")]
     public bool scatterInsideFrame = true;
     public float scatterRadius = 1.0f;
-    public float pieceDepthOffset = 0.03f;
+    public float pieceDepthOffset = 0.15f; // INCREASED to prevent clipping into the wall's physics collider!
 
     [Header("Completion")]
     public UnityEvent onPuzzleComplete;
@@ -99,8 +99,8 @@ public class PuzzleManager : MonoBehaviour
         SlotPositions = new Vector3[columns, rows];
 
         // Actual world dimensions of the frame area
-        float worldWidth = frameSize.x * frameTransform.lossyScale.x;
-        float worldHeight = frameSize.y * frameTransform.lossyScale.y;
+        float worldWidth = Mathf.Abs(frameSize.x * frameTransform.lossyScale.x);
+        float worldHeight = Mathf.Abs(frameSize.y * frameTransform.lossyScale.y);
 
         // Center in _pieceContainer local space (same rotation as frame, scale = 1)
         Vector3 center = Vector3.zero;
@@ -149,13 +149,17 @@ public class PuzzleManager : MonoBehaviour
                 slotPos.z = -0.001f * index; // stagger each piece slightly
                 go.transform.localPosition = slotPos;
                 // Also update the piece's stored home position to match:
-                go.GetComponent<BoxCollider>().size = new Vector3(sw, sh, 0.1f);
+                go.GetComponent<BoxCollider>().size = new Vector3(Mathf.Abs(sw), Mathf.Abs(sh), 0.1f);
 
                 var piece = go.GetComponent<PuzzlePiece>() ?? go.AddComponent<PuzzlePiece>();
                 piece.Initialise(new Vector2Int(c, r), slotPos);
                 var dragger = go.GetComponent<PuzzleDragger>() ?? go.AddComponent<PuzzleDragger>();
                 dragger.manager = this; dragger.piece = piece;
                 _pieceMap[new Vector2Int(c, r)] = dragger; _allPieces.Add(go);
+                
+                // Add VR Grab component automatically at runtime
+                if (go.GetComponent<VRPuzzlePiece>() == null)
+                    go.AddComponent<VRPuzzlePiece>();
             }
         }
     }

@@ -72,9 +72,10 @@ namespace MuseumGame.Narrative
         // Callback do XR — equivalente a premir E
         private void OnXRInteract(SelectEnterEventArgs args)
         {
-            bool canInteract = !requirePlayerTrigger || playerInside;
-            if (!canInteract) return;
-
+            Debug.Log($"[SimpleDialogueTrigger] OnXRInteract triggered by VR Laser on {gameObject.name}!");
+            
+            // VR FIX: Ignore the 'playerInside' trigger zone requirement. 
+            // If the player aimed their laser and clicked, they intend to interact.
             if (!dialogueOpen) BeginDialogue();
             else AdvanceDialogue();
         }
@@ -85,6 +86,30 @@ namespace MuseumGame.Narrative
 
             if (dialoguePanel != null && !dialogueOpen)
                 dialoguePanel.SetActive(false);
+        }
+
+        void Update()
+        {
+            if (dialogueOpen && dialoguePanel != null)
+            {
+                // Force canvas to constantly track in front of the VR camera
+                Camera cam = Camera.main;
+                if (cam == null) cam = FindObjectOfType<Camera>();
+                
+                if (cam != null)
+                {
+                    Canvas canvas = dialoguePanel.GetComponentInParent<Canvas>();
+                    if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
+                    {
+                        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                        
+                        // Smoothly lerp towards the player's face
+                        Vector3 targetPos = cam.transform.position + cam.transform.forward * 1.2f;
+                        canvasRect.position = Vector3.Lerp(canvasRect.position, targetPos, Time.deltaTime * 5f);
+                        canvasRect.rotation = Quaternion.LookRotation(canvasRect.position - cam.transform.position);
+                    }
+                }
+            }
         }
 
         void OnTriggerEnter(Collider other)
@@ -107,17 +132,27 @@ namespace MuseumGame.Narrative
 
         public void BeginDialogue()
         {
-            if (oneShot && hasFinishedOnce)
-                return;
+            Debug.Log($"[SimpleDialogueTrigger] BeginDialogue called on {gameObject.name}");
 
             if (lines == null || lines.Length == 0)
+            {
+                Debug.Log("[SimpleDialogueTrigger] Aborting: No dialogue lines configured.");
                 return;
+            }
 
             currentLineIndex = 0;
             dialogueOpen = true;
 
             if (dialoguePanel != null)
+            {
                 dialoguePanel.SetActive(true);
+                EnsureCanvasIsWorldSpace();
+                Debug.Log($"[SimpleDialogueTrigger] Activated dialogue panel at: {dialoguePanel.transform.position}");
+            }
+            else
+            {
+                Debug.LogError("[SimpleDialogueTrigger] CRITICAL ERROR: dialoguePanel is null!");
+            }
 
             if (speakerText != null)
                 speakerText.text = speakerName;
@@ -128,6 +163,38 @@ namespace MuseumGame.Narrative
             RefreshInteractionHint();
             ShowLine();
             onDialogueStarted?.Invoke();
+            Debug.Log($"[SimpleDialogueTrigger] Dialogue successfully opened. Displaying line 0: {lines[0]}");
+        }
+
+        private void EnsureCanvasIsWorldSpace()
+        {
+            if (dialoguePanel == null) return;
+            Canvas canvas = dialoguePanel.GetComponentInParent<Canvas>();
+            if (canvas != null && canvas.renderMode != RenderMode.WorldSpace)
+            {
+                canvas.renderMode = RenderMode.WorldSpace;
+                
+                // Position it physically in front of the PLAYER'S FACE to guarantee visibility
+                Camera cam = Camera.main;
+                if (cam == null) cam = FindObjectOfType<Camera>();
+                
+                if (cam != null)
+                {
+                    RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                    canvasRect.sizeDelta = new Vector2(1000, 500); // Standard VR canvas resolution
+                    canvasRect.position = cam.transform.position + cam.transform.forward * 1.5f;
+                    canvasRect.rotation = Quaternion.LookRotation(canvasRect.position - cam.transform.position);
+                    canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // Scale down pixel to meter
+                }
+                else
+                {
+                    RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                    canvasRect.sizeDelta = new Vector2(1000, 500);
+                    canvasRect.position = transform.position + transform.forward * 0.5f + Vector3.up * 0.2f;
+                    canvasRect.rotation = transform.rotation;
+                    canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+                }
+            }
         }
 
         public void AdvanceDialogue()
@@ -182,22 +249,56 @@ namespace MuseumGame.Narrative
             if (dialoguePanel == null)
             {
                 GameObject panel = GameObject.Find("DialoguePanel");
-                if (panel != null)
-                    dialoguePanel = panel;
+                if (panel == null)
+                {
+                    // CRITICAL FIX: The VR Scene doesn't have a Dialogue Canvas. We must build one from scratch.
+                    GameObject canvasObj = new GameObject("VR_DialogueCanvas");
+                    Canvas canvas = canvasObj.AddComponent<Canvas>();
+                    canvas.renderMode = RenderMode.WorldSpace;
+                    
+                    RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                    canvasRect.sizeDelta = new Vector2(1000, 500);
+                    canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+                    
+                    panel = new GameObject("DialoguePanel");
+                    panel.transform.SetParent(canvasObj.transform, false);
+                    panel.AddComponent<Image>();
+                    
+                    Debug.Log("[SimpleDialogueTrigger] Auto-generated missing VR_DialogueCanvas.");
+                }
+                dialoguePanel = panel;
             }
 
             if (speakerText == null)
             {
                 GameObject speaker = GameObject.Find("SpeakerText");
-                if (speaker != null)
+                if (speaker == null && dialoguePanel != null)
+                {
+                    speaker = new GameObject("SpeakerText");
+                    speaker.transform.SetParent(dialoguePanel.transform, false);
+                    speakerText = speaker.AddComponent<Text>();
+                    speakerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                }
+                else if (speaker != null)
+                {
                     speakerText = speaker.GetComponent<Text>();
+                }
             }
 
             if (bodyText == null)
             {
                 GameObject body = GameObject.Find("BodyText");
-                if (body != null)
+                if (body == null && dialoguePanel != null)
+                {
+                    body = new GameObject("BodyText");
+                    body.transform.SetParent(dialoguePanel.transform, false);
+                    bodyText = body.AddComponent<Text>();
+                    bodyText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                }
+                else if (body != null)
+                {
                     bodyText = body.GetComponent<Text>();
+                }
             }
 
             if (promptText == null && dialoguePanel != null)
