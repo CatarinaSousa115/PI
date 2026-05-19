@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using MuseumGame;
 
 public class StatueController : MonoBehaviour
 {
@@ -22,6 +23,13 @@ public class StatueController : MonoBehaviour
 
     [Tooltip("Layer mask for the player.")]
     public LayerMask playerLayer;
+
+    [Header("HUD Feedback")]
+    public bool showHudFeedback = true;
+    public string entranceStatus = "Aproxima-te da estatua e carrega no gatilho.";
+    public string minigameActiveStatus = "Ouve a pista e interage com os quadros na ordem correta.";
+    public string returnToStatueStatus = "Volta a estatua para concluir a sala.";
+    public string completeStatus = "Sala da estatua concluida.";
 
 
     public enum StatueState
@@ -54,6 +62,7 @@ public class StatueController : MonoBehaviour
 
         CurrentState = StatueState.WaitingForFirstInteraction;
         PlayClip(entranceDialogue);
+        SetHudStatus(entranceStatus);
 
         Debug.Log("[Statue] Entrance dialogue started. Waiting for first interaction.");
     }
@@ -63,6 +72,7 @@ public class StatueController : MonoBehaviour
         if (CurrentState != StatueState.MinigameActive) return;
 
         CurrentState = StatueState.WaitingForFinalInteraction;
+        SetHudStatus(returnToStatueStatus);
         Debug.Log("[Statue] All paintings solved! Waiting for final interaction.");
     }
 
@@ -92,6 +102,7 @@ public class StatueController : MonoBehaviour
     private IEnumerator StartMinigameSequence()
     {
         CurrentState = StatueState.MinigameActive;
+        SetHudStatus(minigameActiveStatus);
         yield return PlayClipAndWait(minigameIntroDialogue);
 
         minigameManager.BeginMinigame();
@@ -103,6 +114,7 @@ public class StatueController : MonoBehaviour
         CurrentState = StatueState.Complete;
         yield return PlayClipAndWait(completionDialogue);
 
+        SetHudStatus(completeStatus);
         minigameManager.CompleteMinigame();
         Debug.Log("[Statue] Minigame complete!");
     }
@@ -130,5 +142,13 @@ public class StatueController : MonoBehaviour
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, interactionRange);
+    }
+
+    private void SetHudStatus(string message)
+    {
+        if (!showHudFeedback || string.IsNullOrWhiteSpace(message))
+            return;
+
+        MuseumHud.EnsureExists()?.SetStatus(message);
     }
 }

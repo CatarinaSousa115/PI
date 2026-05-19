@@ -10,10 +10,12 @@ public class PuzzleCameraController : MonoBehaviour
     public Transform puzzleViewPoint;
     public Transform frameTransform;
     public float cameraDistance = 1.5f;
+    public bool moveXROriginToPuzzleView;
 
     private Vector3 _savedOriginPosition;
     private Quaternion _savedOriginRotation;
     private bool _inPuzzleView;
+    private bool _originMoved;
 
     private void Awake()
     {
@@ -31,10 +33,18 @@ public class PuzzleCameraController : MonoBehaviour
         _savedOriginPosition = xrOrigin.transform.position;
         _savedOriginRotation = xrOrigin.transform.rotation;
 
+        if (!moveXROriginToPuzzleView)
+        {
+            _originMoved = false;
+            Debug.Log("[PuzzleCamera] Puzzle view enabled without moving XR Origin.");
+            return;
+        }
+
         Vector3 targetPosition = GetPuzzlePosition();
         Quaternion targetRotation = GetPuzzleRotation(targetPosition);
 
         xrOrigin.transform.SetPositionAndRotation(targetPosition, targetRotation);
+        _originMoved = true;
 
         Debug.Log("[PuzzleCamera] XR Origin moved to puzzle view.");
     }
@@ -46,9 +56,12 @@ public class PuzzleCameraController : MonoBehaviour
 
         _inPuzzleView = false;
 
-        xrOrigin.transform.SetPositionAndRotation(_savedOriginPosition, _savedOriginRotation);
+        if (_originMoved)
+            xrOrigin.transform.SetPositionAndRotation(_savedOriginPosition, _savedOriginRotation);
 
-        Debug.Log("[PuzzleCamera] XR Origin restored to player view.");
+        _originMoved = false;
+
+        Debug.Log("[PuzzleCamera] Puzzle view disabled.");
     }
 
     public bool IsInPuzzleView => _inPuzzleView;

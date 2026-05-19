@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using MuseumGame.UI;
 
 namespace Puzzle
 {
@@ -34,13 +35,19 @@ namespace Puzzle
         public TextMeshProUGUI completionLabel;
 
         [Tooltip("Text to display.")]
-        public string completionText = "Painting Restored!";
+        public string completionText = "Pintura restaurada!";
 
         [Tooltip("How long the panel stays visible before fading.")]
         public float panelDisplayDuration = 3f;
 
         [Tooltip("Canvas group used to fade the panel.")]
         public CanvasGroup panelCanvasGroup;
+
+        public bool autoCreateCompletionUI = true;
+        public bool keepCompletionUiInFrontOfCamera = true;
+        public float completionUiDistance = 1.1f;
+        public Vector2 completionUiOffset = new Vector2(0f, 0.02f);
+        public float completionUiFollowSpeed = 8f;
 
         [Header("World Event")]
         [Tooltip("Optional: A door or mechanism Animator to trigger on completion.")]
@@ -66,13 +73,22 @@ namespace Puzzle
         [Tooltip("Índice da peça a desbloquear (0-25).")]
         public int pieceIndexToUnlock = 5;
 
+        private Canvas _completionCanvas;
+
         // ─────────────────────────────────────────────
         // Public: called by PuzzleManager.onPuzzleComplete
         // ─────────────────────────────────────────────
 
         public void OnPuzzleComplete()
         {
+            EnsureCompletionUI();
             StartCoroutine(CompletionSequence());
+        }
+
+        private void Update()
+        {
+            if (completionPanel != null && completionPanel.activeInHierarchy)
+                UpdateCompletionUiPlacement(false);
         }
 
         // ─────────────────────────────────────────────
@@ -81,6 +97,8 @@ namespace Puzzle
 
         private IEnumerator CompletionSequence()
         {
+            EnsureCompletionUI();
+
             // Desbloqueia a peça na parede do museu
             if (pieceDisplay != null)
                 pieceDisplay.UnlockPiece(pieceIndexToUnlock);
@@ -152,9 +170,12 @@ namespace Puzzle
 
         private IEnumerator ShowCompletionUI()
         {
+            EnsureCompletionUI();
+
             if (completionLabel != null) completionLabel.text = completionText;
 
             completionPanel.SetActive(true);
+            UpdateCompletionUiPlacement(true);
 
             // Fade in
             if (panelCanvasGroup != null)
@@ -185,6 +206,92 @@ namespace Puzzle
             }
 
             completionPanel.SetActive(false);
+        }
+
+        private void EnsureCompletionUI()
+        {
+            if (completionPanel == null && autoCreateCompletionUI)
+                CreateDefaultCompletionUI();
+
+            if (completionPanel == null)
+                return;
+
+            if (completionLabel == null)
+                completionLabel = completionPanel.GetComponentInChildren<TextMeshProUGUI>(includeInactive: true);
+
+            if (panelCanvasGroup == null)
+                panelCanvasGroup = completionPanel.GetComponent<CanvasGroup>();
+
+            if (panelCanvasGroup == null)
+                panelCanvasGroup = completionPanel.AddComponent<CanvasGroup>();
+
+            _completionCanvas = completionPanel.GetComponentInParent<Canvas>();
+            ConfigureCompletionCanvas();
+        }
+
+        private void CreateDefaultCompletionUI()
+        {
+            GameObject canvasObject = new GameObject("VR_PuzzleCompletionCanvas");
+            _completionCanvas = canvasObject.AddComponent<Canvas>();
+            canvasObject.AddComponent<GraphicRaycaster>();
+
+            GameObject panel = new GameObject("PuzzleCompletionPanel");
+            panel.transform.SetParent(canvasObject.transform, false);
+            Image panelImage = panel.AddComponent<Image>();
+            panelImage.color = new Color(0.04f, 0.07f, 0.07f, 0.9f);
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = Vector2.zero;
+            panelRect.sizeDelta = new Vector2(620f, 150f);
+
+            Outline outline = panel.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            panelCanvasGroup = panel.AddComponent<CanvasGroup>();
+
+            GameObject labelObject = new GameObject("PuzzleCompletionLabel");
+            labelObject.transform.SetParent(panel.transform, false);
+            completionLabel = labelObject.AddComponent<TextMeshProUGUI>();
+            completionLabel.text = completionText;
+            completionLabel.color = new Color(1f, 0.92f, 0.64f, 1f);
+            completionLabel.fontSize = 42f;
+            completionLabel.alignment = TextAlignmentOptions.Center;
+            completionLabel.textWrappingMode = TextWrappingModes.Normal;
+
+            RectTransform labelRect = completionLabel.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(28f, 16f);
+            labelRect.offsetMax = new Vector2(-28f, -16f);
+
+            completionPanel = panel;
+            completionPanel.SetActive(false);
+        }
+
+        private void ConfigureCompletionCanvas()
+        {
+            if (_completionCanvas == null)
+                return;
+
+            VRUiPlacement.ConfigureWorldSpaceCanvas(_completionCanvas, new Vector2(660f, 180f), 0.001f, 240);
+        }
+
+        private void UpdateCompletionUiPlacement(bool snap)
+        {
+            if (!keepCompletionUiInFrontOfCamera)
+                return;
+
+            if (_completionCanvas == null && completionPanel != null)
+                _completionCanvas = completionPanel.GetComponentInParent<Canvas>();
+
+            if (_completionCanvas == null)
+                return;
+
+            VRUiPlacement.PlaceInFrontOfCamera(_completionCanvas.transform, completionUiDistance, completionUiOffset, completionUiFollowSpeed, snap);
         }
     }
 }

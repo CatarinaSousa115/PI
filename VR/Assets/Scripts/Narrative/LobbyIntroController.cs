@@ -192,7 +192,7 @@ namespace MuseumGame.Narrative
             }
 
             if (hud == null)
-                hud = MuseumHud.Instance != null ? MuseumHud.Instance : FindAnyObjectByType<MuseumHud>();
+                hud = MuseumHud.EnsureExists();
 
             if (introDialogue != null)
             {

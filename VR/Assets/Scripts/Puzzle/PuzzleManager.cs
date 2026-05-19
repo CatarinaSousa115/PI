@@ -26,6 +26,9 @@ public class PuzzleManager : MonoBehaviour
     [Header("Prefabs")]
     public GameObject piecePrefab;
 
+    [Header("Input")]
+    public bool ensureInputHandler = true;
+
     [Header("Scatter Settings")]
     public bool scatterInsideFrame = true;
     public float scatterRadius = 1.0f;
@@ -86,6 +89,7 @@ public class PuzzleManager : MonoBehaviour
         GenerateSlots();
         GeneratePieces();
         ScatterPieces();
+        EnsureInputHandler();
     }
 
     public void ResetPuzzle()
@@ -192,6 +196,14 @@ public class PuzzleManager : MonoBehaviour
     {
         try { Color[] px = src.GetPixels(x, y, w, h); Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false); tex.SetPixels(px); tex.Apply(); return tex; }
         catch { return null; }
+    }
+
+    private void EnsureInputHandler()
+    {
+        if (!ensureInputHandler || FindFirstObjectByType<PuzzleInputHandler>() != null)
+            return;
+
+        gameObject.AddComponent<PuzzleInputHandler>();
     }
 
     public void NotifyPieceLocked(PuzzlePiece piece)

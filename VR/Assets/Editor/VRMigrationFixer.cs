@@ -50,15 +50,6 @@ public class VRMigrationFixer : EditorWindow
                         newRig.transform.rotation = lobbySpawn.transform.rotation;
                         Debug.Log("[VR Migration] Teleported XR Origin to Lobby 1.1 Marker.");
                     }
-                    else
-                    {
-                        GameObject debugTeleporter = GameObject.FindObjectOfType<MuseumGame.Player.DebugRoomTeleporter>()?.gameObject;
-                        if (debugTeleporter != null) {
-                            newRig.transform.position = debugTeleporter.transform.position;
-                            Debug.Log("[VR Migration] Teleported XR Origin near DebugRoomTeleporter.");
-                        }
-                    }
-                    
                     existingRig = newRig;
                     changed = true;
                 }

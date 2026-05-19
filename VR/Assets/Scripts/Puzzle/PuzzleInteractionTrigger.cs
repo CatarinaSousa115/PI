@@ -1,18 +1,36 @@
 using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using MuseumGame.UI;
+using XRCommonUsages = UnityEngine.XR.CommonUsages;
+using XRInputDevice = UnityEngine.XR.InputDevice;
+using XRInputDevices = UnityEngine.XR.InputDevices;
+using XRInputDeviceCharacteristics = UnityEngine.XR.InputDeviceCharacteristics;
 
 public class PuzzleInteractionTrigger : MonoBehaviour
 {
     [Header("Interaction")]
     public string playerTag = "Player";
     public InputActionProperty interactAction;
+    public Key keyboardToggleKey = Key.G;
+    public Key keyboardCloseKey = Key.Escape;
+    public float keyboardActivationDistance = 3f;
+    public bool useXRControllerCloseButton = true;
+    public bool preferRightControllerForClose = true;
 
     [Header("UI Prompt")]
     public GameObject promptUI;
     public TextMeshProUGUI promptText;
-    public string enterText = "Press Trigger to inspect painting";
-    public string exitText = "Press Trigger to step back";
+    public string enterText = "Press [G] to inspect painting";
+    public string exitText = "Press [G] or [B/Y] to step back";
+    public bool autoCreatePromptUI = true;
+
+    [Header("VR Prompt Placement")]
+    public bool keepPromptInFrontOfCamera = true;
+    public float promptDistance = 1f;
+    public Vector2 promptOffset = new Vector2(0f, -0.32f);
+    public float promptFollowSpeed = 10f;
 
     [Header("Scene References")]
     public PuzzleManager puzzleManager;
@@ -32,39 +50,66 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     private RigidbodyConstraints _savedConstraints;
     private bool _savedKinematic;
     private Renderer[] _playerRenderers;
+    private Transform _playerTransform;
+    private bool _xrCloseWasPressedLastFrame;
+    private Canvas _promptCanvas;
+    private readonly System.Collections.Generic.List<XRInputDevice> _xrDevices = new();
 
     private void Start()
     {
-        if (puzzleManager == null) puzzleManager = FindObjectOfType<PuzzleManager>();
-        if (cameraController == null) cameraController = FindObjectOfType<PuzzleCameraController>();
+        if (puzzleManager == null) puzzleManager = FindFirstObjectByType<PuzzleManager>();
+        if (cameraController == null) cameraController = FindFirstObjectByType<PuzzleCameraController>();
 
+        EnsurePromptUI();
         SetPromptVisible(false);
 
         if (playerModelRoot != null)
             _playerRenderers = playerModelRoot.GetComponentsInChildren<Renderer>(includeInactive: true);
+
+        ResolvePlayerReference();
     }
 
     private void Update()
     {
-        if (!_playerInRange)
+        bool interactPressed = interactAction.action != null && interactAction.action.WasPressedThisFrame();
+        bool keyboardOpenPressed = keyboardToggleKey != Key.None &&
+                                   Keyboard.current != null &&
+                                   Keyboard.current[keyboardToggleKey].wasPressedThisFrame;
+        bool keyboardClosePressed = keyboardCloseKey != Key.None &&
+                                    Keyboard.current != null &&
+                                    Keyboard.current[keyboardCloseKey].wasPressedThisFrame;
+        bool xrClosePressed = useXRControllerCloseButton && WasXRClosePressedThisFrame();
+
+        bool canInteract = _playerInRange || _puzzleOpen || IsPlayerCloseEnoughForKeyboard();
+        if (!canInteract)
             return;
 
-        bool interactPressed = interactAction.action != null && interactAction.action.WasPressedThisFrame();
+        UpdatePromptPlacement(false);
 
-        if (interactPressed)
+        if (_puzzleOpen)
         {
-            Debug.Log($"[PuzzleTrigger] Interact pressed. Open: {!_puzzleOpen}");
-
-            if (!_puzzleOpen)
-                OpenPuzzle();
-            else
+            if (keyboardOpenPressed || keyboardClosePressed || xrClosePressed)
+            {
+                Debug.Log("[PuzzleTrigger] Close puzzle pressed.");
                 ClosePuzzle();
+            }
+
+            return;
+        }
+
+        if (interactPressed || keyboardOpenPressed)
+        {
+            Debug.Log("[PuzzleTrigger] Open puzzle pressed.");
+            OpenPuzzle();
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"[PuzzleTrigger] Entered by: {other.name}, tag: {other.tag}");
+
         if (!other.CompareTag(playerTag)) return;
+
         _playerInRange = true;
         if (!_puzzleOpen) ShowPrompt(enterText);
 
@@ -82,6 +127,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     private void OpenPuzzle()
     {
         _puzzleOpen = true;
+        ResolvePlayerReference();
 
         cameraController?.TransitionToPuzzleView();
         DisablePlayerMovement();
@@ -150,6 +196,11 @@ public class PuzzleInteractionTrigger : MonoBehaviour
 
     private void AutoDiscoverPlayerComponents(GameObject playerGO)
     {
+        if (playerGO == null)
+            return;
+
+        _playerTransform = playerGO.transform;
+
         if (playerCharacterController == null)
             playerCharacterController = playerGO.GetComponentInChildren<CharacterController>();
 
@@ -162,33 +213,172 @@ public class PuzzleInteractionTrigger : MonoBehaviour
             _playerRenderers = playerModelRoot.GetComponentsInChildren<Renderer>(includeInactive: true);
         }
 
-        if (playerScriptsToDisable == null || playerScriptsToDisable.Length == 0)
+        if (playerScriptsToDisable == null)
+            playerScriptsToDisable = System.Array.Empty<MonoBehaviour>();
+    }
+
+    private void ResolvePlayerReference()
+    {
+        if (_playerTransform != null)
+            return;
+
+        GameObject playerGO = GameObject.FindGameObjectWithTag(playerTag);
+
+        if (playerGO == null && cameraController != null && cameraController.xrOrigin != null)
+            playerGO = cameraController.xrOrigin.gameObject;
+
+        AutoDiscoverPlayerComponents(playerGO);
+    }
+
+    private bool IsPlayerCloseEnoughForKeyboard()
+    {
+        ResolvePlayerReference();
+
+        if (_playerTransform == null || keyboardActivationDistance <= 0f)
+            return false;
+
+        Vector3 targetPosition = transform.position;
+
+        if (puzzleManager != null && puzzleManager.frameTransform != null)
+            targetPosition = puzzleManager.frameTransform.position;
+
+        return Vector3.Distance(_playerTransform.position, targetPosition) <= keyboardActivationDistance;
+    }
+
+    private bool WasXRClosePressedThisFrame()
+    {
+        bool pressed = IsXRCloseButtonPressed();
+        bool pressedThisFrame = pressed && !_xrCloseWasPressedLastFrame;
+        _xrCloseWasPressedLastFrame = pressed;
+        return pressedThisFrame;
+    }
+
+    private bool IsXRCloseButtonPressed()
+    {
+        XRInputDeviceCharacteristics preferredHand = preferRightControllerForClose
+            ? XRInputDeviceCharacteristics.Right
+            : XRInputDeviceCharacteristics.Left;
+        XRInputDeviceCharacteristics fallbackHand = preferRightControllerForClose
+            ? XRInputDeviceCharacteristics.Left
+            : XRInputDeviceCharacteristics.Right;
+
+        return IsXRCloseButtonPressed(preferredHand) || IsXRCloseButtonPressed(fallbackHand);
+    }
+
+    private bool IsXRCloseButtonPressed(XRInputDeviceCharacteristics hand)
+    {
+        _xrDevices.Clear();
+        XRInputDevices.GetDevicesWithCharacteristics(XRInputDeviceCharacteristics.Controller | hand, _xrDevices);
+
+        foreach (XRInputDevice device in _xrDevices)
         {
-            var found = new System.Collections.Generic.List<MonoBehaviour>();
-            foreach (var mb in playerGO.GetComponentsInChildren<MonoBehaviour>())
-            {
-                string typeName = mb.GetType().Name.ToLower();
-                if (typeName.Contains("move") || typeName.Contains("walk") ||
-                    typeName.Contains("look") || typeName.Contains("rotate") ||
-                    typeName.Contains("input") || typeName.Contains("control") ||
-                    typeName.Contains("jump") || typeName.Contains("player"))
-                {
-                    found.Add(mb);
-                }
-            }
-            playerScriptsToDisable = found.ToArray();
+            if (!device.isValid)
+                continue;
+
+            if (device.TryGetFeatureValue(XRCommonUsages.secondaryButton, out bool secondaryPressed) && secondaryPressed)
+                return true;
+
+            if (device.TryGetFeatureValue(XRCommonUsages.menuButton, out bool menuPressed) && menuPressed)
+                return true;
         }
+
+        return false;
     }
 
     private void ShowPrompt(string text)
     {
+        EnsurePromptUI();
         if (promptText != null) promptText.text = text;
+        UpdatePromptPlacement(true);
         SetPromptVisible(true);
     }
 
     private void SetPromptVisible(bool v)
     {
+        if (v)
+        {
+            EnsurePromptUI();
+            UpdatePromptPlacement(true);
+        }
+
         if (promptUI != null) promptUI.SetActive(v);
+    }
+
+    private void EnsurePromptUI()
+    {
+        if (promptUI == null && autoCreatePromptUI)
+            CreateDefaultPromptUI();
+
+        if (promptUI != null)
+        {
+            if (promptText == null)
+                promptText = promptUI.GetComponentInChildren<TextMeshProUGUI>(includeInactive: true);
+
+            _promptCanvas = promptUI.GetComponentInParent<Canvas>();
+            ConfigurePromptCanvas();
+        }
+    }
+
+    private void CreateDefaultPromptUI()
+    {
+        GameObject canvasObject = new GameObject("VR_PuzzlePromptCanvas");
+        _promptCanvas = canvasObject.AddComponent<Canvas>();
+        canvasObject.AddComponent<GraphicRaycaster>();
+
+        GameObject panel = new GameObject("PuzzlePromptPanel");
+        panel.transform.SetParent(canvasObject.transform, false);
+        Image panelImage = panel.AddComponent<Image>();
+        panelImage.color = new Color(0.04f, 0.05f, 0.07f, 0.86f);
+
+        RectTransform panelRect = panel.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.anchoredPosition = Vector2.zero;
+        panelRect.sizeDelta = new Vector2(720f, 96f);
+
+        Outline outline = panel.AddComponent<Outline>();
+        outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
+        outline.effectDistance = new Vector2(2f, -2f);
+
+        GameObject textObject = new GameObject("PuzzlePromptText");
+        textObject.transform.SetParent(panel.transform, false);
+        promptText = textObject.AddComponent<TextMeshProUGUI>();
+        promptText.text = enterText;
+        promptText.color = Color.white;
+        promptText.fontSize = 34f;
+        promptText.alignment = TextAlignmentOptions.Center;
+        promptText.textWrappingMode = TextWrappingModes.Normal;
+
+        RectTransform textRect = promptText.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(28f, 12f);
+        textRect.offsetMax = new Vector2(-28f, -12f);
+
+        promptUI = panel;
+    }
+
+    private void ConfigurePromptCanvas()
+    {
+        if (_promptCanvas == null)
+            return;
+
+        VRUiPlacement.ConfigureWorldSpaceCanvas(_promptCanvas, new Vector2(760f, 120f), 0.001f, 230);
+    }
+
+    private void UpdatePromptPlacement(bool snap)
+    {
+        if (!keepPromptInFrontOfCamera)
+            return;
+
+        if (_promptCanvas == null && promptUI != null)
+            _promptCanvas = promptUI.GetComponentInParent<Canvas>();
+
+        if (_promptCanvas == null)
+            return;
+
+        VRUiPlacement.PlaceInFrontOfCamera(_promptCanvas.transform, promptDistance, promptOffset, promptFollowSpeed, snap);
     }
 
     // ─────────────────────────────────────────────

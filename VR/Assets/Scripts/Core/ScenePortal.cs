@@ -55,6 +55,7 @@ namespace MuseumGame
                 MuseumGameManager.Instance != null &&
                 !MuseumGameManager.Instance.IsRoomComplete(requiredRoom))
             {
+                MuseumHud.EnsureExists()?.SetStatus(lockedMessage);
                 Debug.Log($"[ScenePortal] {lockedMessage}");
                 return;
             }

@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using MuseumGame;
+using MuseumGame.UI;
 
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -25,16 +27,25 @@ namespace MuseumGame.Narrative
         [Header("Look")]
         public bool autoResolveUiReferences = true;
         public bool autoStyleDialogue = true;
-        public string promptMessage = "Pressiona Trigger para continuar";
-        public string interactionHintMessage = "Pressiona Trigger para falar";
+        public string promptMessage = "Carrega [G] para continuar";
+        public string interactionHintMessage = "Carrega [G] para interagir";
         public Color panelColor = new Color(0.06f, 0.08f, 0.12f, 0.88f);
         public Color speakerColor = new Color(0.96f, 0.84f, 0.56f, 1f);
         public Color bodyColor = new Color(0.96f, 0.97f, 0.98f, 1f);
         public Color promptColor = new Color(0.75f, 0.8f, 0.88f, 1f);
         public Color interactionHintColor = new Color(0.98f, 0.98f, 1f, 0.96f);
 
+        [Header("VR Placement")]
+        public bool keepUiInFrontOfCamera = true;
+        public float uiDistance = 1f;
+        public Vector2 uiOffset = new Vector2(0f, -0.1f);
+        public float uiFollowSpeed = 8f;
+
         [Header("Interaction")]
+        public string playerTag = "Player";
         public bool requirePlayerTrigger = true;
+        public Key keyboardInteractKey = Key.G;
+        public float keyboardActivationDistance = 5f;
         public bool oneShot = true;
 
         [Header("Room")]
@@ -49,6 +60,8 @@ namespace MuseumGame.Narrative
         private bool dialogueOpen;
         private bool playerInside;
         private bool hasFinishedOnce;
+        private Transform playerTransform;
+        private GameObject interactionHintPanel;
 
         void Awake()
         {
@@ -90,40 +103,45 @@ namespace MuseumGame.Narrative
 
         void Update()
         {
-            if (dialogueOpen && dialoguePanel != null)
+            bool canInteract = CanInteractWithPlayer();
+            bool keyboardPressed = keyboardInteractKey != Key.None &&
+                                   Keyboard.current != null &&
+                                   Keyboard.current[keyboardInteractKey].wasPressedThisFrame;
+
+            if (keyboardPressed && (dialogueOpen || canInteract))
             {
-                // Force canvas to constantly track in front of the VR camera
-                Camera cam = Camera.main;
-                if (cam == null) cam = FindObjectOfType<Camera>();
-                
-                if (cam != null)
-                {
-                    Canvas canvas = dialoguePanel.GetComponentInParent<Canvas>();
-                    if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
-                    {
-                        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-                        
-                        // Smoothly lerp towards the player's face
-                        Vector3 targetPos = cam.transform.position + cam.transform.forward * 1.2f;
-                        canvasRect.position = Vector3.Lerp(canvasRect.position, targetPos, Time.deltaTime * 5f);
-                        canvasRect.rotation = Quaternion.LookRotation(canvasRect.position - cam.transform.position);
-                    }
-                }
+                if (!dialogueOpen)
+                    BeginDialogue();
+                else
+                    AdvanceDialogue();
+            }
+
+            RefreshInteractionHint();
+
+            bool hintVisible = interactionHintPanel != null
+                ? interactionHintPanel.activeInHierarchy
+                : interactionHintText != null && interactionHintText.gameObject.activeInHierarchy;
+
+            if (keepUiInFrontOfCamera && dialoguePanel != null && (dialogueOpen || hintVisible))
+            {
+                Canvas canvas = dialoguePanel.GetComponentInParent<Canvas>();
+                ConfigureDialogueCanvas(canvas, false);
             }
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (other.CompareTag(playerTag))
             {
                 playerInside = true;
+                playerTransform = other.transform;
                 RefreshInteractionHint();
             }
         }
 
         void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (other.CompareTag(playerTag))
             {
                 playerInside = false;
                 RefreshInteractionHint();
@@ -133,6 +151,12 @@ namespace MuseumGame.Narrative
         public void BeginDialogue()
         {
             Debug.Log($"[SimpleDialogueTrigger] BeginDialogue called on {gameObject.name}");
+
+            if (oneShot && hasFinishedOnce)
+            {
+                RefreshInteractionHint();
+                return;
+            }
 
             if (lines == null || lines.Length == 0)
             {
@@ -170,31 +194,18 @@ namespace MuseumGame.Narrative
         {
             if (dialoguePanel == null) return;
             Canvas canvas = dialoguePanel.GetComponentInParent<Canvas>();
-            if (canvas != null && canvas.renderMode != RenderMode.WorldSpace)
-            {
-                canvas.renderMode = RenderMode.WorldSpace;
-                
-                // Position it physically in front of the PLAYER'S FACE to guarantee visibility
-                Camera cam = Camera.main;
-                if (cam == null) cam = FindObjectOfType<Camera>();
-                
-                if (cam != null)
-                {
-                    RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-                    canvasRect.sizeDelta = new Vector2(1000, 500); // Standard VR canvas resolution
-                    canvasRect.position = cam.transform.position + cam.transform.forward * 1.5f;
-                    canvasRect.rotation = Quaternion.LookRotation(canvasRect.position - cam.transform.position);
-                    canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // Scale down pixel to meter
-                }
-                else
-                {
-                    RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-                    canvasRect.sizeDelta = new Vector2(1000, 500);
-                    canvasRect.position = transform.position + transform.forward * 0.5f + Vector3.up * 0.2f;
-                    canvasRect.rotation = transform.rotation;
-                    canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f);
-                }
-            }
+            ConfigureDialogueCanvas(canvas, true);
+        }
+
+        private void ConfigureDialogueCanvas(Canvas canvas, bool snap)
+        {
+            if (canvas == null)
+                return;
+
+            VRUiPlacement.ConfigureWorldSpaceCanvas(canvas, new Vector2(1200f, 620f), 0.00105f, 220);
+
+            if (keepUiInFrontOfCamera)
+                VRUiPlacement.PlaceInFrontOfCamera(canvas.transform, uiDistance, uiOffset, uiFollowSpeed, snap);
         }
 
         public void AdvanceDialogue()
@@ -255,10 +266,11 @@ namespace MuseumGame.Narrative
                     GameObject canvasObj = new GameObject("VR_DialogueCanvas");
                     Canvas canvas = canvasObj.AddComponent<Canvas>();
                     canvas.renderMode = RenderMode.WorldSpace;
+                    canvasObj.AddComponent<GraphicRaycaster>();
                     
                     RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-                    canvasRect.sizeDelta = new Vector2(1000, 500);
-                    canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+                    canvasRect.sizeDelta = new Vector2(1200f, 620f);
+                    canvasRect.localScale = Vector3.one * 0.00105f;
                     
                     panel = new GameObject("DialoguePanel");
                     panel.transform.SetParent(canvasObj.transform, false);
@@ -314,6 +326,9 @@ namespace MuseumGame.Narrative
                 if (hint != null)
                     interactionHintText = hint.GetComponent<Text>();
             }
+
+            if (dialoguePanel != null)
+                ConfigureDialogueCanvas(dialoguePanel.GetComponentInParent<Canvas>(), true);
         }
 
         private void ApplyDialogueStyling()
@@ -325,7 +340,7 @@ namespace MuseumGame.Narrative
             {
                 Image panelImage = dialoguePanel.GetComponent<Image>();
                 if (panelImage != null)
-                    panelImage.color = panelColor;
+                    panelImage.color = new Color(0.04f, 0.05f, 0.07f, 0.86f);
 
                 RectTransform panelRect = dialoguePanel.GetComponent<RectTransform>();
                 if (panelRect != null)
@@ -333,8 +348,8 @@ namespace MuseumGame.Narrative
                     panelRect.anchorMin = new Vector2(0.5f, 0f);
                     panelRect.anchorMax = new Vector2(0.5f, 0f);
                     panelRect.pivot = new Vector2(0.5f, 0f);
-                    panelRect.anchoredPosition = new Vector2(0f, 34f);
-                    panelRect.sizeDelta = new Vector2(860f, 230f);
+                    panelRect.anchoredPosition = new Vector2(0f, 44f);
+                    panelRect.sizeDelta = new Vector2(1040f, 300f);
                 }
 
                 Outline panelOutline = dialoguePanel.GetComponent<Outline>();
@@ -353,7 +368,7 @@ namespace MuseumGame.Narrative
             if (speakerText != null)
             {
                 speakerText.color = speakerColor;
-                speakerText.fontSize = 26;
+                speakerText.fontSize = 32;
                 speakerText.alignment = TextAnchor.UpperLeft;
 
                 RectTransform rect = speakerText.GetComponent<RectTransform>();
@@ -362,15 +377,15 @@ namespace MuseumGame.Narrative
                     rect.anchorMin = new Vector2(0f, 1f);
                     rect.anchorMax = new Vector2(1f, 1f);
                     rect.pivot = new Vector2(0.5f, 1f);
-                    rect.anchoredPosition = new Vector2(0f, -20f);
-                    rect.sizeDelta = new Vector2(-56f, 38f);
+                    rect.anchoredPosition = new Vector2(0f, -24f);
+                    rect.sizeDelta = new Vector2(-64f, 44f);
                 }
             }
 
             if (bodyText != null)
             {
                 bodyText.color = bodyColor;
-                bodyText.fontSize = 22;
+                bodyText.fontSize = 28;
                 bodyText.alignment = TextAnchor.UpperLeft;
                 bodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
                 bodyText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -382,7 +397,7 @@ namespace MuseumGame.Narrative
                     rect.anchorMax = new Vector2(1f, 1f);
                     rect.pivot = new Vector2(0.5f, 0.5f);
                     rect.anchoredPosition = new Vector2(0f, -6f);
-                    rect.sizeDelta = new Vector2(-56f, -104f);
+                    rect.sizeDelta = new Vector2(-64f, -124f);
                 }
             }
 
@@ -405,7 +420,7 @@ namespace MuseumGame.Narrative
 
             promptText.text = promptMessage;
             promptText.color = promptColor;
-            promptText.fontSize = 16;
+            promptText.fontSize = 22;
             promptText.alignment = TextAnchor.LowerRight;
             promptText.horizontalOverflow = HorizontalWrapMode.Overflow;
             promptText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -416,28 +431,56 @@ namespace MuseumGame.Narrative
                 rect.anchorMin = new Vector2(0f, 0f);
                 rect.anchorMax = new Vector2(1f, 0f);
                 rect.pivot = new Vector2(0.5f, 0f);
-                rect.anchoredPosition = new Vector2(0f, 14f);
-                rect.sizeDelta = new Vector2(-48f, 22f);
+                rect.anchoredPosition = new Vector2(0f, 18f);
+                rect.sizeDelta = new Vector2(-56f, 30f);
             }
         }
 
         private void EnsureInteractionHintText()
         {
+            Transform canvasTransform = dialoguePanel != null ? dialoguePanel.transform.parent : null;
+            if (canvasTransform == null)
+                return;
+
+            interactionHintPanel = EnsureInteractionHintPanel(canvasTransform);
+
             if (interactionHintText == null)
             {
-                Transform canvasTransform = dialoguePanel != null ? dialoguePanel.transform.parent : null;
-                if (canvasTransform == null)
-                    return;
+                Transform existingHint = interactionHintPanel.transform.Find("DialogueHintText");
 
-                GameObject hint = new GameObject("DialogueHintText");
-                hint.transform.SetParent(canvasTransform, false);
-                interactionHintText = hint.AddComponent<Text>();
-                interactionHintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                if (existingHint == null)
+                {
+                    Transform legacyHint = canvasTransform.Find("DialogueHintText");
+                    if (legacyHint != null)
+                    {
+                        existingHint = legacyHint;
+                        existingHint.SetParent(interactionHintPanel.transform, false);
+                    }
+                }
+
+                if (existingHint == null)
+                {
+                    GameObject hint = new GameObject("DialogueHintText");
+                    hint.transform.SetParent(interactionHintPanel.transform, false);
+                    interactionHintText = hint.AddComponent<Text>();
+                }
+                else
+                {
+                    interactionHintText = existingHint.GetComponent<Text>();
+                    if (interactionHintText == null)
+                        interactionHintText = existingHint.gameObject.AddComponent<Text>();
+                }
+            }
+            else if (interactionHintText.transform.parent != interactionHintPanel.transform)
+            {
+                interactionHintText.transform.SetParent(interactionHintPanel.transform, false);
             }
 
             interactionHintText.text = interactionHintMessage;
-            interactionHintText.color = interactionHintColor;
-            interactionHintText.fontSize = 20;
+            interactionHintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            interactionHintText.color = Color.white;
+            interactionHintText.fontSize = 34;
+            interactionHintText.fontStyle = FontStyle.Bold;
             interactionHintText.alignment = TextAnchor.MiddleCenter;
             interactionHintText.horizontalOverflow = HorizontalWrapMode.Wrap;
             interactionHintText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -445,11 +488,11 @@ namespace MuseumGame.Narrative
             RectTransform rect = interactionHintText.GetComponent<RectTransform>();
             if (rect != null)
             {
-                rect.anchorMin = new Vector2(0.5f, 0f);
-                rect.anchorMax = new Vector2(0.5f, 0f);
-                rect.pivot = new Vector2(0.5f, 0f);
-                rect.anchoredPosition = new Vector2(0f, 274f);
-                rect.sizeDelta = new Vector2(420f, 28f);
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.offsetMin = new Vector2(28f, 12f);
+                rect.offsetMax = new Vector2(-28f, -12f);
             }
 
             Outline outline = interactionHintText.GetComponent<Outline>();
@@ -459,13 +502,85 @@ namespace MuseumGame.Narrative
             outline.effectDistance = new Vector2(1f, -1f);
         }
 
+        private GameObject EnsureInteractionHintPanel(Transform canvasTransform)
+        {
+            Transform panelTransform = canvasTransform.Find("DialogueHintPanel");
+            GameObject panel = panelTransform != null ? panelTransform.gameObject : new GameObject("DialogueHintPanel");
+            panel.transform.SetParent(canvasTransform, false);
+
+            Image image = panel.GetComponent<Image>();
+            if (image == null)
+                image = panel.AddComponent<Image>();
+            image.color = new Color(0.04f, 0.05f, 0.07f, 0.86f);
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            if (panelRect != null)
+            {
+                panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+                panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+                panelRect.pivot = new Vector2(0.5f, 0.5f);
+                panelRect.anchoredPosition = new Vector2(0f, -178f);
+                panelRect.sizeDelta = new Vector2(760f, 116f);
+            }
+
+            Outline outline = panel.GetComponent<Outline>();
+            if (outline == null)
+                outline = panel.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            return panel;
+        }
+
         private void RefreshInteractionHint()
         {
             if (interactionHintText == null)
                 return;
 
-            bool showHint = !dialogueOpen && (!requirePlayerTrigger || playerInside);
-            interactionHintText.gameObject.SetActive(showHint);
+            bool showHint = !dialogueOpen && (!oneShot || !hasFinishedOnce) && CanInteractWithPlayer();
+            if (interactionHintPanel != null)
+                interactionHintPanel.SetActive(showHint);
+            else
+                interactionHintText.gameObject.SetActive(showHint);
+
+            if (showHint && dialoguePanel != null)
+                ConfigureDialogueCanvas(dialoguePanel.GetComponentInParent<Canvas>(), true);
+        }
+
+        private bool CanInteractWithPlayer()
+        {
+            return !requirePlayerTrigger || playerInside || IsPlayerCloseEnoughForKeyboard();
+        }
+
+        private bool IsPlayerCloseEnoughForKeyboard()
+        {
+            if (keyboardActivationDistance <= 0f)
+                return false;
+
+            Transform target = ResolvePlayerTransform();
+            if (target == null)
+                return false;
+
+            return Vector3.Distance(target.position, transform.position) <= keyboardActivationDistance;
+        }
+
+        private Transform ResolvePlayerTransform()
+        {
+            if (playerTransform != null)
+                return playerTransform;
+
+            GameObject player = GameObject.FindGameObjectWithTag(playerTag);
+            if (player != null)
+            {
+                playerTransform = player.transform;
+                return playerTransform;
+            }
+
+            Camera camera = VRUiPlacement.ResolveCamera();
+            if (camera != null)
+                return camera.transform;
+
+            return null;
         }
 
         void OnDestroy()

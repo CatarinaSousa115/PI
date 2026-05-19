@@ -42,4 +42,84 @@ namespace MuseumGame.UI
                 text.alignment = alignment;
         }
     }
+
+    public static class VRUiPlacement
+    {
+        public static void ConfigureWorldSpaceCanvas(Canvas canvas, Vector2 size, float scale, int sortingOrder)
+        {
+            if (canvas == null)
+                return;
+
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = sortingOrder;
+
+            RectTransform rect = canvas.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.sizeDelta = size;
+                rect.localScale = Vector3.one * scale;
+            }
+
+            if (canvas.GetComponent<GraphicRaycaster>() == null)
+                canvas.gameObject.AddComponent<GraphicRaycaster>();
+        }
+
+        public static void PlaceInFrontOfCamera(
+            Transform target,
+            float distance,
+            Vector2 meterOffset,
+            float followSpeed,
+            bool instant,
+            bool avoidGeometry = true,
+            float geometryPadding = 0.08f,
+            float minimumDistance = 0.18f)
+        {
+            if (target == null)
+                return;
+
+            Camera camera = ResolveCamera();
+            if (camera == null)
+                return;
+
+            Transform cameraTransform = camera.transform;
+            float targetDistance = Mathf.Max(minimumDistance, distance);
+
+            if (avoidGeometry &&
+                Physics.Raycast(
+                    cameraTransform.position,
+                    cameraTransform.forward,
+                    out RaycastHit hit,
+                    targetDistance + geometryPadding,
+                    Physics.DefaultRaycastLayers,
+                    QueryTriggerInteraction.Ignore))
+            {
+                targetDistance = Mathf.Clamp(hit.distance - geometryPadding, 0.05f, targetDistance);
+            }
+
+            Vector3 targetPosition = cameraTransform.position +
+                                     cameraTransform.forward * targetDistance +
+                                     cameraTransform.right * meterOffset.x +
+                                     cameraTransform.up * meterOffset.y;
+
+            if (instant || followSpeed <= 0f)
+                target.position = targetPosition;
+            else
+                target.position = Vector3.Lerp(target.position, targetPosition, Time.deltaTime * followSpeed);
+
+            Vector3 lookDirection = target.position - cameraTransform.position;
+            if (lookDirection.sqrMagnitude <= 0.0001f)
+                lookDirection = cameraTransform.forward;
+
+            target.rotation = Quaternion.LookRotation(lookDirection, Vector3.up);
+        }
+
+        public static Camera ResolveCamera()
+        {
+            if (Camera.main != null)
+                return Camera.main;
+
+            return Object.FindFirstObjectByType<Camera>();
+        }
+    }
 }

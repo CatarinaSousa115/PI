@@ -41,6 +41,7 @@ namespace MuseumGame
             if (dontDestroyOnLoad)
                 DontDestroyOnLoad(gameObject);
 
+            MuseumHud.EnsureExists();
             SetObjective(initialObjective, forceNotify: true);
             NotifyPlaqueProgress();
         }

@@ -66,8 +66,9 @@ public class PuzzleDragger : MonoBehaviour
 
     private void TrySnapToBoard()
     {
-        // Distance check in LOCAL space
-        float dist = Vector3.Distance(transform.localPosition, piece.CorrectSlotLocal);
+        Vector2 current = new Vector2(transform.localPosition.x, transform.localPosition.y);
+        Vector2 target = new Vector2(piece.CorrectSlotLocal.x, piece.CorrectSlotLocal.y);
+        float dist = Vector2.Distance(current, target);
 
         if (dist <= snapDistance)
         {
