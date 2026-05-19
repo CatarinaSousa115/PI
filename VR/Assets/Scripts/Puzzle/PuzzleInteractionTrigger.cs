@@ -22,7 +22,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     [Header("UI Prompt")]
     public GameObject promptUI;
     public TextMeshProUGUI promptText;
-    public string enterText = "Press [G] to inspect painting";
+    public string enterText = "Press [G] or [B/Y] to inspect painting";
     public string exitText = "Press [G] or [B/Y] to step back";
     public bool autoCreatePromptUI = true;
 
@@ -78,7 +78,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         bool keyboardClosePressed = keyboardCloseKey != Key.None &&
                                     Keyboard.current != null &&
                                     Keyboard.current[keyboardCloseKey].wasPressedThisFrame;
-        bool xrClosePressed = useXRControllerCloseButton && WasXRClosePressedThisFrame();
+        bool xrButtonPressed = useXRControllerCloseButton && WasXRClosePressedThisFrame();
 
         bool canInteract = _playerInRange || _puzzleOpen || IsPlayerCloseEnoughForKeyboard();
         if (!canInteract)
@@ -88,7 +88,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
 
         if (_puzzleOpen)
         {
-            if (keyboardOpenPressed || keyboardClosePressed || xrClosePressed)
+            if (keyboardOpenPressed || keyboardClosePressed || xrButtonPressed)
             {
                 Debug.Log("[PuzzleTrigger] Close puzzle pressed.");
                 ClosePuzzle();
@@ -97,7 +97,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
             return;
         }
 
-        if (interactPressed || keyboardOpenPressed)
+        if (interactPressed || keyboardOpenPressed || xrButtonPressed)
         {
             Debug.Log("[PuzzleTrigger] Open puzzle pressed.");
             OpenPuzzle();
