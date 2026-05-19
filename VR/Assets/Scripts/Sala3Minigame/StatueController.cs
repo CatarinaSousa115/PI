@@ -1,16 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// Controls the statue's speech and interaction states.
-/// Attach to the statue GameObject.
-/// </summary>
 public class StatueController : MonoBehaviour
 {
-    // ──────────────────────────────────────────────
-    // Inspector fields
-    // ──────────────────────────────────────────────
-
     [Header("Audio Clips")]
     [Tooltip("Clip played automatically when the player enters the room.")]
     public AudioClip entranceDialogue;
@@ -31,13 +23,10 @@ public class StatueController : MonoBehaviour
     [Tooltip("Layer mask for the player.")]
     public LayerMask playerLayer;
 
-    // ──────────────────────────────────────────────
-    // Internal state
-    // ──────────────────────────────────────────────
 
     public enum StatueState
     {
-        Idle,               // Before player enters
+        Idle,            
         WaitingForFirstInteraction,
         MinigameActive,
         WaitingForFinalInteraction,
