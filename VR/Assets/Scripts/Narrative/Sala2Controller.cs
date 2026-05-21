@@ -21,6 +21,12 @@ namespace MuseumGame.Narrative
         public PuzzleManager puzzleManager;
         public CardSocketPuzzle cardSocketPuzzle;
 
+        [Header("Lobby Reward")]
+        [Tooltip("Referência para o display de peças no lobby.")]
+        public PieceDisplay pieceDisplay;
+        [Tooltip("Índice da peça a desbloquear quando a sala estiver concluída.")]
+        public int pieceIndexToUnlock = 0;
+
         [Header("Feedback")]
         public string completionStatusMessage = "Passagem para a Sala 3 aberta!";
 
