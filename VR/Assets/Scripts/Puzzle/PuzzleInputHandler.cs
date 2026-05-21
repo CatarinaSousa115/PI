@@ -12,8 +12,13 @@ public class PuzzleInputHandler : MonoBehaviour
     public InputActionProperty triggerAction;
     public float rayDistance = 10f;
     public bool useXRControllerButtons = true;
-    public bool allowGripButton = true;
+    public bool allowTriggerButton = true;
+    public bool allowGripButton = false;
     public bool preferRightController = true;
+
+    [Header("Keyboard/Simulator Drag Fallback")]
+    public bool allowKeyboardDragFallback = true;
+    public Key keyboardDragKey = Key.T;
 
     private PuzzleDragger _currentDragger;
     private bool _wasPressedLastFrame;
@@ -35,9 +40,20 @@ public class PuzzleInputHandler : MonoBehaviour
 
         bool mousePressed = Mouse.current != null && Mouse.current.leftButton.isPressed;
         bool xrPressed = useXRControllerButtons && IsXRControllerPressed();
-        bool pressed = (triggerAction.action != null && triggerAction.action.IsPressed()) || xrPressed || mousePressed;
+        bool keyboardDragPressed = allowKeyboardDragFallback &&
+                                   Keyboard.current != null &&
+                                   keyboardDragKey != Key.None &&
+                                   Keyboard.current[keyboardDragKey].isPressed;
 
-        if (!TryGetRay(mousePressed, out Ray ray))
+        bool pressed = (triggerAction.action != null && triggerAction.action.IsPressed()) ||
+                       xrPressed ||
+                       mousePressed ||
+                       keyboardDragPressed;
+
+        if (pressed && !_wasPressedLastFrame)
+            Debug.Log("[PuzzleInput] Drag pressed. Use controller trigger or keyboard T to drag puzzle pieces.");
+
+        if (!TryGetRay(mousePressed, keyboardDragPressed, out Ray ray))
             return;
 
         if (pressed && !_wasPressedLastFrame)
@@ -56,7 +72,7 @@ public class PuzzleInputHandler : MonoBehaviour
             }
             else
             {
-                Debug.Log("[VR Raycast] Hit: absolutely nothing.");
+                Debug.Log("[PuzzleInput] Drag ray did not hit any PuzzleDragger. Aim the center of the view at a piece when using T.");
             }
         }
 
@@ -97,7 +113,7 @@ public class PuzzleInputHandler : MonoBehaviour
         }
     }
 
-    private bool TryGetRay(bool mousePressed, out Ray ray)
+    private bool TryGetRay(bool mousePressed, bool keyboardDragPressed, out Ray ray)
     {
         if (mousePressed && _fallbackCamera != null && Mouse.current != null)
         {
@@ -105,9 +121,19 @@ public class PuzzleInputHandler : MonoBehaviour
             return true;
         }
 
+        if (keyboardDragPressed && _fallbackCamera != null)
+        {
+            ray = _fallbackCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            Debug.DrawRay(ray.origin, ray.direction * rayDistance, Color.green);
+            return true;
+        }
+
         if (rayOrigin != null)
         {
             ray = new Ray(rayOrigin.position, rayOrigin.forward);
+
+            Debug.DrawRay(ray.origin, ray.direction * rayDistance, Color.red);
+
             return true;
         }
 
@@ -117,16 +143,25 @@ public class PuzzleInputHandler : MonoBehaviour
 
     private PuzzleDragger GetPuzzleDraggerFromRay(Ray ray)
     {
-        RaycastHit[] hits = Physics.RaycastAll(ray, rayDistance);
+        RaycastHit[] hits = Physics.RaycastAll(
+            ray,
+            rayDistance,
+            ~0,
+            QueryTriggerInteraction.Collide
+        );
+
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         foreach (RaycastHit hit in hits)
         {
+            Debug.Log($"[VR Raycast] Hit {hit.collider.name}");
+
             PuzzleDragger dragger = hit.collider.GetComponentInParent<PuzzleDragger>();
             if (dragger != null)
                 return dragger;
         }
 
+        Debug.Log("[VR Raycast] No puzzle piece found on ray.");
         return null;
     }
 
@@ -222,8 +257,12 @@ public class PuzzleInputHandler : MonoBehaviour
 
         foreach (XRInputDevice device in _xrDevices)
         {
-            if (device.TryGetFeatureValue(XRCommonUsages.triggerButton, out bool triggerPressed) && triggerPressed)
+            if (allowTriggerButton &&
+                device.TryGetFeatureValue(XRCommonUsages.triggerButton, out bool triggerPressed) &&
+                triggerPressed)
+            {
                 return true;
+            }
 
             if (allowGripButton &&
                 device.TryGetFeatureValue(XRCommonUsages.gripButton, out bool gripPressed) &&

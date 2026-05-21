@@ -13,17 +13,21 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     [Header("Interaction")]
     public string playerTag = "Player";
     public InputActionProperty interactAction;
-    public Key keyboardToggleKey = Key.G;
+    public Key keyboardToggleKey = Key.H;
+    public Key legacyKeyboardToggleKey = Key.G;
+    public bool acceptLegacyKeyboardToggleKey = true;
     public Key keyboardCloseKey = Key.Escape;
     public float keyboardActivationDistance = 3f;
     public bool useXRControllerCloseButton = true;
     public bool preferRightControllerForClose = true;
+    public bool useSecondaryButtonForToggle = true;
+    public bool useMenuButtonForToggle = true;
 
     [Header("UI Prompt")]
     public GameObject promptUI;
     public TextMeshProUGUI promptText;
-    public string enterText = "Press [G] or [B/Y] to inspect painting";
-    public string exitText = "Press [G] or [B/Y] to step back";
+    public string enterText = "Press [H] / [G] or [B/Y] to inspect painting";
+    public string exitText = "Press [H] / [G] or [B/Y] to step back";
     public bool autoCreatePromptUI = true;
 
     [Header("VR Prompt Placement")]
@@ -72,9 +76,9 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     private void Update()
     {
         bool interactPressed = interactAction.action != null && interactAction.action.WasPressedThisFrame();
-        bool keyboardOpenPressed = keyboardToggleKey != Key.None &&
-                                   Keyboard.current != null &&
-                                   Keyboard.current[keyboardToggleKey].wasPressedThisFrame;
+        bool keyboardOpenPressed = Keyboard.current != null &&
+                                   ((keyboardToggleKey != Key.None && Keyboard.current[keyboardToggleKey].wasPressedThisFrame) ||
+                                    (acceptLegacyKeyboardToggleKey && legacyKeyboardToggleKey != Key.None && Keyboard.current[legacyKeyboardToggleKey].wasPressedThisFrame));
         bool keyboardClosePressed = keyboardCloseKey != Key.None &&
                                     Keyboard.current != null &&
                                     Keyboard.current[keyboardCloseKey].wasPressedThisFrame;
@@ -82,7 +86,10 @@ public class PuzzleInteractionTrigger : MonoBehaviour
 
         bool canInteract = _playerInRange || _puzzleOpen || IsPlayerCloseEnoughForKeyboard();
         if (!canInteract)
+        {
+            _xrCloseWasPressedLastFrame = false;
             return;
+        }
 
         UpdatePromptPlacement(false);
 
@@ -155,7 +162,23 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     private void DisablePlayerMovement()
     {
         foreach (var s in playerScriptsToDisable)
-            if (s != null) s.enabled = false;
+        {
+            if (s == null)
+                continue;
+
+            string typeName = s.GetType().Name.ToLowerInvariant();
+            bool isXRInputOrInteractor =
+                typeName.Contains("interactor") ||
+                typeName.Contains("controller") ||
+                typeName.Contains("input") ||
+                typeName.Contains("action") ||
+                typeName.Contains("manager");
+
+            if (isXRInputOrInteractor)
+                continue;
+
+            s.enabled = false;
+        }
 
         if (playerCharacterController != null)
             playerCharacterController.enabled = false;
@@ -199,7 +222,8 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         if (playerGO == null)
             return;
 
-        _playerTransform = playerGO.transform;
+        if (_playerTransform == null)
+            _playerTransform = playerGO.transform;
 
         if (playerCharacterController == null)
             playerCharacterController = playerGO.GetComponentInChildren<CharacterController>();
@@ -212,9 +236,6 @@ public class PuzzleInteractionTrigger : MonoBehaviour
             playerModelRoot = playerGO;
             _playerRenderers = playerModelRoot.GetComponentsInChildren<Renderer>(includeInactive: true);
         }
-
-        if (playerScriptsToDisable == null)
-            playerScriptsToDisable = System.Array.Empty<MonoBehaviour>();
     }
 
     private void ResolvePlayerReference()
@@ -275,11 +296,19 @@ public class PuzzleInteractionTrigger : MonoBehaviour
             if (!device.isValid)
                 continue;
 
-            if (device.TryGetFeatureValue(XRCommonUsages.secondaryButton, out bool secondaryPressed) && secondaryPressed)
+            if (useSecondaryButtonForToggle &&
+                device.TryGetFeatureValue(XRCommonUsages.secondaryButton, out bool secondaryPressed) &&
+                secondaryPressed)
+            {
                 return true;
+            }
 
-            if (device.TryGetFeatureValue(XRCommonUsages.menuButton, out bool menuPressed) && menuPressed)
+            if (useMenuButtonForToggle &&
+                device.TryGetFeatureValue(XRCommonUsages.menuButton, out bool menuPressed) &&
+                menuPressed)
+            {
                 return true;
+            }
         }
 
         return false;
