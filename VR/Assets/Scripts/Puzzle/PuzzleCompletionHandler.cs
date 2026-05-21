@@ -219,6 +219,8 @@ namespace Puzzle
             if (completionLabel == null)
                 completionLabel = completionPanel.GetComponentInChildren<TextMeshProUGUI>(includeInactive: true);
 
+            AssignDefaultFont(completionLabel);
+
             if (panelCanvasGroup == null)
                 panelCanvasGroup = completionPanel.GetComponent<CanvasGroup>();
 
@@ -256,6 +258,7 @@ namespace Puzzle
             GameObject labelObject = new GameObject("PuzzleCompletionLabel");
             labelObject.transform.SetParent(panel.transform, false);
             completionLabel = labelObject.AddComponent<TextMeshProUGUI>();
+            AssignDefaultFont(completionLabel);
             completionLabel.text = completionText;
             completionLabel.color = new Color(1f, 0.92f, 0.64f, 1f);
             completionLabel.fontSize = 42f;
@@ -270,6 +273,12 @@ namespace Puzzle
 
             completionPanel = panel;
             completionPanel.SetActive(false);
+        }
+
+        private static void AssignDefaultFont(TextMeshProUGUI text)
+        {
+            if (text != null && text.font == null && TMP_Settings.defaultFontAsset != null)
+                text.font = TMP_Settings.defaultFontAsset;
         }
 
         private void ConfigureCompletionCanvas()

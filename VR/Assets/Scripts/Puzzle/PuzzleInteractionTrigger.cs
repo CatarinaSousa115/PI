@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MuseumGame.UI;
+using System.Collections.Generic;
 using XRCommonUsages = UnityEngine.XR.CommonUsages;
 using XRInputDevice = UnityEngine.XR.InputDevice;
 using XRInputDevices = UnityEngine.XR.InputDevices;
@@ -41,11 +42,15 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     public PuzzleCameraController cameraController;
 
     [Header("Player — Movement Lock")]
+    public bool lockPlayerMovementWhilePuzzleOpen;
     public MonoBehaviour[] playerScriptsToDisable;
     public CharacterController playerCharacterController;
+    public bool disableCharacterControllerWhenLocked;
     public Rigidbody playerRigidbody;
+    public bool freezeRigidbodyWhenLocked;
 
     [Header("Player — Visibility")]
+    public bool hidePlayerWhilePuzzleOpen;
     public GameObject playerModelRoot;
     public bool hideShadowToo = true;
 
@@ -53,11 +58,15 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     private bool _puzzleOpen;
     private RigidbodyConstraints _savedConstraints;
     private bool _savedKinematic;
+    private bool _savedCharacterControllerEnabled;
+    private bool _characterControllerStateSaved;
+    private bool _rigidbodyStateSaved;
     private Renderer[] _playerRenderers;
     private Transform _playerTransform;
     private bool _xrCloseWasPressedLastFrame;
     private Canvas _promptCanvas;
-    private readonly System.Collections.Generic.List<XRInputDevice> _xrDevices = new();
+    private readonly Dictionary<MonoBehaviour, bool> _disabledScriptStates = new();
+    private readonly List<XRInputDevice> _xrDevices = new();
 
     private void Start()
     {
@@ -137,8 +146,12 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         ResolvePlayerReference();
 
         cameraController?.TransitionToPuzzleView();
-        DisablePlayerMovement();
-        SetPlayerVisible(false);
+
+        if (lockPlayerMovementWhilePuzzleOpen)
+            DisablePlayerMovement();
+
+        if (hidePlayerWhilePuzzleOpen)
+            SetPlayerVisible(false);
 
         puzzleManager?.EnterPuzzleMode();
 
@@ -150,8 +163,12 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         _puzzleOpen = false;
 
         cameraController?.TransitionToPlayerView();
-        EnablePlayerMovement();
-        SetPlayerVisible(true);
+
+        if (lockPlayerMovementWhilePuzzleOpen)
+            EnablePlayerMovement();
+
+        if (hidePlayerWhilePuzzleOpen)
+            SetPlayerVisible(true);
 
         puzzleManager?.ExitPuzzleMode();
 
@@ -166,27 +183,30 @@ public class PuzzleInteractionTrigger : MonoBehaviour
             if (s == null)
                 continue;
 
-            string typeName = s.GetType().Name.ToLowerInvariant();
-            bool isXRInputOrInteractor =
-                typeName.Contains("interactor") ||
-                typeName.Contains("controller") ||
-                typeName.Contains("input") ||
-                typeName.Contains("action") ||
-                typeName.Contains("manager");
-
-            if (isXRInputOrInteractor)
+            if (ShouldKeepScriptEnabledForXRControls(s))
+            {
+                Debug.LogWarning($"[PuzzleTrigger] Keeping XR/input script enabled: {s.GetType().Name}");
                 continue;
+            }
+
+            if (!_disabledScriptStates.ContainsKey(s))
+                _disabledScriptStates.Add(s, s.enabled);
 
             s.enabled = false;
         }
 
-        if (playerCharacterController != null)
+        if (disableCharacterControllerWhenLocked && playerCharacterController != null)
+        {
+            _savedCharacterControllerEnabled = playerCharacterController.enabled;
+            _characterControllerStateSaved = true;
             playerCharacterController.enabled = false;
+        }
 
-        if (playerRigidbody != null)
+        if (freezeRigidbodyWhenLocked && playerRigidbody != null)
         {
             _savedConstraints = playerRigidbody.constraints;
             _savedKinematic = playerRigidbody.isKinematic;
+            _rigidbodyStateSaved = true;
             playerRigidbody.isKinematic = true;
             playerRigidbody.constraints = RigidbodyConstraints.FreezeAll;
         }
@@ -194,17 +214,55 @@ public class PuzzleInteractionTrigger : MonoBehaviour
 
     private void EnablePlayerMovement()
     {
-        foreach (var s in playerScriptsToDisable)
-            if (s != null) s.enabled = true;
+        foreach (var state in _disabledScriptStates)
+        {
+            if (state.Key != null)
+                state.Key.enabled = state.Value;
+        }
 
-        if (playerCharacterController != null)
-            playerCharacterController.enabled = true;
+        _disabledScriptStates.Clear();
 
-        if (playerRigidbody != null)
+        if (_characterControllerStateSaved && playerCharacterController != null)
+            playerCharacterController.enabled = _savedCharacterControllerEnabled;
+
+        _characterControllerStateSaved = false;
+
+        if (_rigidbodyStateSaved && playerRigidbody != null)
         {
             playerRigidbody.isKinematic = _savedKinematic;
             playerRigidbody.constraints = _savedConstraints;
         }
+
+        _rigidbodyStateSaved = false;
+    }
+
+    private bool ShouldKeepScriptEnabledForXRControls(MonoBehaviour script)
+    {
+        System.Type type = script.GetType();
+        string typeName = type.Name.ToLowerInvariant();
+        string fullName = (type.FullName ?? type.Name).ToLowerInvariant();
+
+        bool isExplicitLocomotionProvider =
+            typeName.Contains("moveprovider") ||
+            typeName.Contains("turnprovider") ||
+            typeName.Contains("teleportationprovider");
+
+        if (isExplicitLocomotionProvider)
+            return false;
+
+        return fullName.Contains("unityengine.xr") ||
+               typeName.Contains("xrorigin") ||
+               typeName.Contains("interactor") ||
+               typeName.Contains("controller") ||
+               typeName.Contains("input") ||
+               typeName.Contains("action") ||
+               typeName.Contains("manager") ||
+               typeName.Contains("simulator") ||
+               typeName.Contains("gaze") ||
+               typeName.Contains("hand") ||
+               typeName.Contains("ray") ||
+               typeName.Contains("grab") ||
+               typeName.Contains("locomotion");
     }
 
     private void SetPlayerVisible(bool visible)
@@ -343,6 +401,8 @@ public class PuzzleInteractionTrigger : MonoBehaviour
             if (promptText == null)
                 promptText = promptUI.GetComponentInChildren<TextMeshProUGUI>(includeInactive: true);
 
+            AssignDefaultFont(promptText);
+
             _promptCanvas = promptUI.GetComponentInParent<Canvas>();
             ConfigurePromptCanvas();
         }
@@ -373,6 +433,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         GameObject textObject = new GameObject("PuzzlePromptText");
         textObject.transform.SetParent(panel.transform, false);
         promptText = textObject.AddComponent<TextMeshProUGUI>();
+        AssignDefaultFont(promptText);
         promptText.text = enterText;
         promptText.color = Color.white;
         promptText.fontSize = 34f;
@@ -386,6 +447,12 @@ public class PuzzleInteractionTrigger : MonoBehaviour
         textRect.offsetMax = new Vector2(-28f, -12f);
 
         promptUI = panel;
+    }
+
+    private static void AssignDefaultFont(TextMeshProUGUI text)
+    {
+        if (text != null && text.font == null && TMP_Settings.defaultFontAsset != null)
+            text.font = TMP_Settings.defaultFontAsset;
     }
 
     private void ConfigurePromptCanvas()

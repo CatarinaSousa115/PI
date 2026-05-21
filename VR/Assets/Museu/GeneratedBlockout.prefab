@@ -10507,10 +10507,13 @@ MonoBehaviour:
   exitText: Press [G] or [B/Y] to step back
   puzzleManager: {fileID: 4761399603779622727}
   cameraController: {fileID: 382817572808315312}
-  playerScriptsToDisable:
-  - {fileID: 0}
+  lockPlayerMovementWhilePuzzleOpen: 0
+  playerScriptsToDisable: []
   playerCharacterController: {fileID: 0}
+  disableCharacterControllerWhenLocked: 0
   playerRigidbody: {fileID: 0}
+  freezeRigidbodyWhenLocked: 0
+  hidePlayerWhilePuzzleOpen: 0
   playerModelRoot: {fileID: 0}
   hideShadowToo: 1
 --- !u!1 &7568379211215361559

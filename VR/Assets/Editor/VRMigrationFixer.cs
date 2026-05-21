@@ -86,6 +86,13 @@ public class VRMigrationFixer : EditorWindow
         // 4. Remove Desktop FPS Controller to revert to pure VR
         if (existingRig != null)
         {
+            int missingScriptsRemoved = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(existingRig);
+            if (missingScriptsRemoved > 0)
+            {
+                Debug.Log($"[VR Migration] Removed {missingScriptsRemoved} missing script component(s) from the XR Origin.");
+                changed = true;
+            }
+
             var desktopCtrl = existingRig.GetComponent("DesktopFPSController");
             if (desktopCtrl != null)
             {
@@ -96,8 +103,8 @@ public class VRMigrationFixer : EditorWindow
         }
 
         // 5. Restore Missing Narrative & Game Managers (This handles opening the door after Dialogue)
-        MuseumGame.MuseumGameManager gameManager = FindObjectOfType<MuseumGame.MuseumGameManager>();
-        MuseumGame.Narrative.LobbyIntroController introController = FindObjectOfType<MuseumGame.Narrative.LobbyIntroController>();
+        MuseumGame.MuseumGameManager gameManager = FindFirstObjectByType<MuseumGame.MuseumGameManager>();
+        MuseumGame.Narrative.LobbyIntroController introController = FindFirstObjectByType<MuseumGame.Narrative.LobbyIntroController>();
         
         if (gameManager == null || introController == null)
         {
@@ -126,7 +133,7 @@ public class VRMigrationFixer : EditorWindow
         }
 
         // 2. Add VRPuzzlePiece to all puzzle pieces
-        PuzzlePiece[] pieces = FindObjectsOfType<PuzzlePiece>(true);
+        PuzzlePiece[] pieces = FindObjectsByType<PuzzlePiece>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         int addedCount = 0;
         foreach (var piece in pieces)
         {
