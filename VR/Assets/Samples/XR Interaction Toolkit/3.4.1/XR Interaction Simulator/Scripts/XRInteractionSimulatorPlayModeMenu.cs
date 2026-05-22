@@ -185,7 +185,16 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.InteractionSimulator
         /// </summary>
         protected void Start()
         {
-            if (!ComponentLocatorUtility<XRInteractionSimulator>.TryFindComponent(out m_Simulator))
+#if HAS_FIND_FIRST_OBJECT_BY_TYPE
+            var simulator = Object.FindFirstObjectByType<XRInteractionSimulator>();
+#else
+            var simulator = Object.FindObjectOfType<XRInteractionSimulator>();
+#endif
+            if (simulator != null)
+            {
+                m_Simulator = simulator;
+            }
+            else
             {
                 Debug.LogError($"Could not find the XRInteractionSimulator component, disabling simulator UI.", this);
                 gameObject.SetActive(false);
