@@ -2571,11 +2571,11 @@ Transform:
   m_GameObject: {fileID: 388495390}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.35, y: 0.146, z: -0}
-  m_LocalScale: {x: 0.1741517, y: 0.25, z: 0.7327282}
+  m_LocalPosition: {x: -0.34999943, y: 0.05, z: 0}
+  m_LocalScale: {x: 0.1741517, y: 0.24999999, z: 0.7327282}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 801204233}
+  m_Father: {fileID: 1580427381}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
 --- !u!65 &388495392
 BoxCollider:
@@ -4172,11 +4172,11 @@ Transform:
   m_GameObject: {fileID: 641723855}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.146, z: -0}
-  m_LocalScale: {x: 0.1926172, y: 0.25, z: 0.7327282}
+  m_LocalPosition: {x: 0, y: 0.05, z: 0}
+  m_LocalScale: {x: 0.19261718, y: 0.24999999, z: 0.7327282}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 801204233}
+  m_Father: {fileID: 1580427381}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
 --- !u!65 &641723857
 BoxCollider:
@@ -7244,21 +7244,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 384455174}
     - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
-      insertIndex: 0
-      addedObject: {fileID: 1965845681}
-    - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
-      insertIndex: 1
-      addedObject: {fileID: 388495391}
-    - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
-      insertIndex: 2
-      addedObject: {fileID: 641723856}
-    - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 2004598657}
-    - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
-      insertIndex: 4
-      addedObject: {fileID: 1278914799}
-    - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1827166047}
     - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
@@ -7282,6 +7267,21 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4781065367532836291, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       insertIndex: -1
       addedObject: {fileID: 698092009}
+    - targetCorrespondingSourceObject: {fileID: 1612225693606035516, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1965845681}
+    - targetCorrespondingSourceObject: {fileID: 1612225693606035516, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 388495391}
+    - targetCorrespondingSourceObject: {fileID: 1612225693606035516, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 641723856}
+    - targetCorrespondingSourceObject: {fileID: 1612225693606035516, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2004598657}
+    - targetCorrespondingSourceObject: {fileID: 1612225693606035516, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1278914799}
     - targetCorrespondingSourceObject: {fileID: 8120459532524254446, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       insertIndex: -1
       addedObject: {fileID: 665677389}
@@ -10193,11 +10193,11 @@ Transform:
   m_GameObject: {fileID: 1278914798}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.75, y: 0.146, z: -0}
-  m_LocalScale: {x: 0.25, y: 0.1700374, z: 0.7327282}
+  m_LocalPosition: {x: 0.7499999, y: 0.05, z: 0}
+  m_LocalScale: {x: 0.25, y: 0.17003739, z: 0.7327282}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 801204233}
+  m_Father: {fileID: 1580427381}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
 --- !u!65 &1278914800
 BoxCollider:
@@ -11519,13 +11519,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1506596307}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.3615, y: 1.0656, z: 2.55}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0.574, y: 1.0656, z: 0.746}
   m_LocalScale: {x: 0.25, y: 0.17003745, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 801204232}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &1506596309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12294,6 +12294,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1573451699}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1580427381 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1612225693606035516, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+  m_PrefabInstance: {fileID: 801204230}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1603368972
 GameObject:
   m_ObjectHideFlags: 0
@@ -12469,10 +12474,10 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Vieira Portuense e Domingos Sequeira
 
-    
 
-    Vieira Portuense and
-    Domingos Sequeira'
+
+    Vieira Portuense and Domingos
+    Sequeira'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -15052,11 +15057,11 @@ Transform:
   m_GameObject: {fileID: 1965845678}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.75, y: 0.146, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.1523973, z: 0.7327282}
+  m_LocalPosition: {x: -0.7499999, y: 0.05, z: 0}
+  m_LocalScale: {x: 0.25, y: 0.15239729, z: 0.7327282}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 801204233}
+  m_Father: {fileID: 1580427381}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
 --- !u!1 &1967336899
 GameObject:
@@ -15197,11 +15202,11 @@ Transform:
   m_GameObject: {fileID: 2004598656}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.35, y: 0.146, z: 0}
+  m_LocalPosition: {x: 0.3500004, y: 0.05, z: 0}
   m_LocalScale: {x: 0.25, y: 0.1592934, z: 0.7327282}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 801204233}
+  m_Father: {fileID: 1580427381}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
 --- !u!65 &2004598658
 BoxCollider:
@@ -15333,7 +15338,7 @@ MonoBehaviour:
     Domingos Sequeira painted a series of four canvases with a sacred theme: Descent
     from the Cross, Adoration of the Magi, Ascension and Last Judgement.
 
-    
+
 
     Conceptually,
     these four works have in common the depiction of the biblical narrative, always
@@ -15341,18 +15346,18 @@ MonoBehaviour:
     the light, sometimes intimate and sometimes overwhelming, as the omnipresent
     protagonist.
 
-    
 
-    Three of the paintings address the concept of life''s
-    finitude and immortality, reflecting the inspired religiosity that accompanied
-    the artist near the end of his life.
 
-    
+    Three of the paintings address the concept of life''s finitude
+    and immortality, reflecting the inspired religiosity that accompanied the artist
+    near the end of his life.
 
-    These four paintings are considered
-    the peak of Sequeira''s work, the ultimate expression of what he considered to
-    be his legacy as an artist and a manifesto of his alignment with the avant-garde
-    artistic trends of his time.'
+
+
+    These four paintings are considered the peak
+    of Sequeira''s work, the ultimate expression of what he considered to be his
+    legacy as an artist and a manifesto of his alignment with the avant-garde artistic
+    trends of his time.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
