@@ -6759,6 +6759,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7146116138849365869, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[0]'
+      value: 49
+      objectReference: {fileID: 0}
     - target: {fileID: 7149583593798558798, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       propertyPath: m_LocalScale.y
       value: 0.50375
@@ -6775,6 +6779,18 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7149785477319357575, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7149785477319357575, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: sensitivity
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7149785477319357575, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: meshRenderer
+      value: 
+      objectReference: {fileID: 1825221431}
     - target: {fileID: 7153435471465639330, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -7132,7 +7148,6 @@ PrefabInstance:
       value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 7149785477319357575, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
     - {fileID: 7668452417952923204, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
     m_RemovedGameObjects:
     - {fileID: 2638064216291711860, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
@@ -14075,6 +14090,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.005970629, y: 0.009775389, z: 0.0038453895}
   m_Center: {x: -0.000013663082, y: 0.0048876945, z: -0.000057414924}
+--- !u!137 &1825221431 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 7146116138849365869, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+  m_PrefabInstance: {fileID: 801204230}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1827166043
 GameObject:
   m_ObjectHideFlags: 0
