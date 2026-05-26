@@ -39,7 +39,7 @@ public class MinigameManager : MonoBehaviour
 
     [Header("HUD Feedback")]
     public bool showHudFeedback = true;
-    public string minigameStartStatus = "Segue a ordem correta dos quadros.";
+    public string minigameStartStatus = "Aponta para os quadros e usa o gatilho na ordem indicada.";
     public string correctStatusFormat = "Quadro correto ({0}/{1}).";
     public string wrongStatus = "Ordem errada. Tenta outra vez desde o inicio.";
     public string paintingsSolvedStatus = "Sequencia resolvida. Volta a estatua.";
