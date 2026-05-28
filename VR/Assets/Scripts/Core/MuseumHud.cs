@@ -177,8 +177,8 @@ namespace MuseumGame
                     canvas = gameObject.AddComponent<Canvas>();
             }
 
-            if (canvas.GetComponent<GraphicRaycaster>() == null)
-                canvas.gameObject.AddComponent<GraphicRaycaster>();
+            if (canvas.GetComponent<GraphicRaycaster>() != null)
+                Destroy(canvas.GetComponent<GraphicRaycaster>());
 
             RectTransform canvasRect = canvas.GetComponent<RectTransform>();
             if (canvasRect != null)
@@ -197,6 +197,7 @@ namespace MuseumGame
 
                 Image image = panel.AddComponent<Image>();
                 image.color = new Color(0.02f, 0.03f, 0.04f, 0.72f);
+                image.raycastTarget = false; // Prevent blocking VR rays
 
                 RectTransform panelRect = panel.GetComponent<RectTransform>();
                 panelRect.anchorMin = new Vector2(0f, 1f);
@@ -235,6 +236,7 @@ namespace MuseumGame
             text.alignment = TextAnchor.UpperLeft;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.raycastTarget = false; // Prevent text from blocking VR rays
 
             RectTransform rect = text.GetComponent<RectTransform>();
             rect.anchorMin = new Vector2(0f, 1f);

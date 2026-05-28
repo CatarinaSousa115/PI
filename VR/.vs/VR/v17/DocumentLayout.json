@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "D:\\Transfer\u00EAncias\\PI\\VR\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Transfer\u00EAncias\\PI\\VR\\Assets\\Scripts\\Puzzle\\SpherePuzzleManager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Assets\\Scripts\\Puzzle\\SpherePuzzleManager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Transfer\u00EAncias\\PI\\VR\\Library\\PackageCache\\com.unity.render-pipelines.universal@37e0d4fc2503\\Shaders\\Lit.shader||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Library\\PackageCache\\com.unity.render-pipelines.universal@37e0d4fc2503\\Shaders\\Lit.shader||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Transfer\u00EAncias\\PI\\VR\\Library\\PackageCache\\com.unity.xr.openxr@ef0033a586bf\\Runtime\\OpenXRLoader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Library\\PackageCache\\com.unity.xr.openxr@ef0033a586bf\\Runtime\\OpenXRLoader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -18,11 +26,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SpherePuzzleManager.cs",
+              "DocumentMoniker": "D:\\Transfer\u00EAncias\\PI\\VR\\Assets\\Scripts\\Puzzle\\SpherePuzzleManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Puzzle\\SpherePuzzleManager.cs",
+              "ToolTip": "D:\\Transfer\u00EAncias\\PI\\VR\\Assets\\Scripts\\Puzzle\\SpherePuzzleManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Puzzle\\SpherePuzzleManager.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAACcAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-28T00:13:00.042Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "Lit.shader",
+              "DocumentMoniker": "D:\\Transfer\u00EAncias\\PI\\VR\\Library\\PackageCache\\com.unity.render-pipelines.universal@37e0d4fc2503\\Shaders\\Lit.shader",
+              "RelativeDocumentMoniker": "Library\\PackageCache\\com.unity.render-pipelines.universal@37e0d4fc2503\\Shaders\\Lit.shader",
+              "ToolTip": "D:\\Transfer\u00EAncias\\PI\\VR\\Library\\PackageCache\\com.unity.render-pipelines.universal@37e0d4fc2503\\Shaders\\Lit.shader",
+              "RelativeToolTip": "Library\\PackageCache\\com.unity.render-pipelines.universal@37e0d4fc2503\\Shaders\\Lit.shader",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-05-28T00:09:11.677Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "VRMigrationFixer.cs",
               "DocumentMoniker": "D:\\Transfer\u00EAncias\\PI\\VR\\Assets\\Editor\\VRMigrationFixer.cs",
               "RelativeDocumentMoniker": "Assets\\Editor\\VRMigrationFixer.cs",
@@ -34,7 +68,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "OpenXRLoader.cs",
               "DocumentMoniker": "D:\\Transfer\u00EAncias\\PI\\VR\\Library\\PackageCache\\com.unity.xr.openxr@ef0033a586bf\\Runtime\\OpenXRLoader.cs",
               "RelativeDocumentMoniker": "Library\\PackageCache\\com.unity.xr.openxr@ef0033a586bf\\Runtime\\OpenXRLoader.cs",
@@ -42,8 +76,7 @@
               "RelativeToolTip": "Library\\PackageCache\\com.unity.xr.openxr@ef0033a586bf\\Runtime\\OpenXRLoader.cs",
               "ViewState": "AgIAABkCAAAAAAAAAAAiwC0CAABOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-16T18:10:22.037Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-16T18:10:22.037Z"
             }
           ]
         }

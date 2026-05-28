@@ -263,6 +263,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircleNode
   puzzleManager: {fileID: 257541240}
+  gazeToleranceDegrees: 8
 --- !u!135 &72052544
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -350,7 +351,7 @@ Transform:
   m_GameObject: {fileID: 72052541}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 26.15191, y: -12.5, z: 56.1}
+  m_LocalPosition: {x: 9.13, y: 9.14, z: 28.14862}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -719,6 +720,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircleNode
   puzzleManager: {fileID: 257541240}
+  gazeToleranceDegrees: 8
 --- !u!135 &270765235
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -806,7 +808,7 @@ Transform:
   m_GameObject: {fileID: 270765232}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 37.1, y: 15.21, z: 13.32}
+  m_LocalPosition: {x: 2.6, y: 4.25, z: 12.94}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -956,6 +958,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircleNode
   puzzleManager: {fileID: 257541240}
+  gazeToleranceDegrees: 8
 --- !u!135 &303980431
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1043,7 +1046,7 @@ Transform:
   m_GameObject: {fileID: 303980428}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 26.15191, y: 4.17959, z: 28.14862}
+  m_LocalPosition: {x: 26.15191, y: 7.43, z: 28.14862}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1256,6 +1259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircleNode
   puzzleManager: {fileID: 257541240}
+  gazeToleranceDegrees: 8
 --- !u!135 &1010561042
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1343,8 +1347,8 @@ Transform:
   m_GameObject: {fileID: 1010561039}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 26.15191, y: 4.17959, z: 28.14862}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 10.88, y: 10.07, z: -4.13}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1493,6 +1497,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircleNode
   puzzleManager: {fileID: 257541240}
+  gazeToleranceDegrees: 8
 --- !u!135 &1307833227
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1580,7 +1585,7 @@ Transform:
   m_GameObject: {fileID: 1307833224}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 53.39, y: 10.94, z: 37.03}
+  m_LocalPosition: {x: 29.69, y: 7.14, z: -1.34}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1782,7 +1787,7 @@ MonoBehaviour:
   m_AllowHoverHapticsWhileSelecting: 1
   m_LineType: 0
   m_BlendVisualLinePoints: 1
-  m_MaxRaycastDistance: 30
+  m_MaxRaycastDistance: 100
   m_RayOriginTransform: {fileID: 0}
   m_ReferenceFrame: {fileID: 0}
   m_Velocity: 16
@@ -1795,7 +1800,7 @@ MonoBehaviour:
   m_ControlPointHeight: 5
   m_SampleFrequency: 20
   m_HitDetectionType: 0
-  m_SphereCastRadius: 0.1
+  m_SphereCastRadius: 0.5
   m_ConeCastAngle: 6
   m_LiveConeCastDebugVisuals: 0
   m_RaycastMask:
@@ -2193,7 +2198,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 10758, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2234,8 +2239,8 @@ Transform:
   m_GameObject: {fileID: 1734552216}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 19.51, y: -0.31, z: 20.71}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 16.99, y: -0.37, z: 19.93}
+  m_LocalScale: {x: 3.4041, y: 1, z: 3.5727}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2384,6 +2389,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircleNode
   puzzleManager: {fileID: 257541240}
+  gazeToleranceDegrees: 8
 --- !u!135 &1770483651
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2471,7 +2477,7 @@ Transform:
   m_GameObject: {fileID: 1770483648}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10.32, y: 14.61, z: 28.14862}
+  m_LocalPosition: {x: 35.7, y: 4.15, z: 14.02}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []

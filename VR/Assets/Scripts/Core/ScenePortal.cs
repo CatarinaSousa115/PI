@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 namespace MuseumGame
 {
@@ -14,7 +15,7 @@ namespace MuseumGame
 
         [Header("Interaction")]
         public bool triggerLoadsScene = true;
-        public KeyCode interactKey = KeyCode.E;
+        public Key interactKey = Key.E;
         [TextArea(2, 3)]
         public string lockedMessage = "Ainda existe uma sala por concluir antes de avancares.";
 
@@ -22,7 +23,7 @@ namespace MuseumGame
 
         void Update()
         {
-            if (!triggerLoadsScene && playerInside && Input.GetKeyDown(interactKey))
+            if (!triggerLoadsScene && playerInside && Keyboard.current != null && Keyboard.current[interactKey].wasPressedThisFrame)
                 TryLoadScene();
         }
 
