@@ -19,6 +19,8 @@ public class CircleNode : MonoBehaviour
         // We will just use math to see if the player is looking at the sphere!
     }
 
+    private bool wasTriggerPressedLastFrame = false;
+
     void Update()
     {
         // Custom Math-based Line of Sight Check (flawless, infinite distance, ignores overlapping colliders)
@@ -35,8 +37,26 @@ public class CircleNode : MonoBehaviour
             }
         }
 
-        // Check if the player is looking, it's not green yet, and they press 'G' on the keyboard
-        if (isLooking && !isActivated && Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame)
+        // Universal VR Trigger Check (Works for both left and right controllers without Inspector setup)
+        bool isTriggerPressed = false;
+        var devices = new System.Collections.Generic.List<UnityEngine.XR.InputDevice>();
+        UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(UnityEngine.XR.InputDeviceCharacteristics.Controller, devices);
+        
+        foreach (var device in devices)
+        {
+            if (device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton, out bool triggerValue))
+            {
+                if (triggerValue) isTriggerPressed = true;
+            }
+        }
+
+        bool triggerPressedThisFrame = isTriggerPressed && !wasTriggerPressedLastFrame;
+        wasTriggerPressedLastFrame = isTriggerPressed;
+
+        // Check if the player is looking, it's not activated yet, and they press the VR trigger (or 'G' on keyboard as fallback)
+        bool keyboardFallback = Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame;
+
+        if (isLooking && !isActivated && (triggerPressedThisFrame || keyboardFallback))
         {
             ActivateCircle();
         }

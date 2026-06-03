@@ -13,10 +13,16 @@ namespace MuseumGame.Puzzle
         [Tooltip("List of all spheres that need to turn green.")]
         public List<GazeSphere> allSpheres = new List<GazeSphere>();
 
+        [Tooltip("The exact number of green spheres needed to complete the puzzle.")]
+        public int requiredSpheres = 5;
+
         private int greenSpheresCount = 0;
 
         void Start()
         {
+            // Force it to 5 to avoid Unity Inspector overriding it with old values
+            requiredSpheres = 5;
+
             // Optional: Auto-find spheres if list is empty
             if (allSpheres.Count == 0)
             {
@@ -28,9 +34,9 @@ namespace MuseumGame.Puzzle
         {
             greenSpheresCount++;
             
-            Debug.Log($"[SpherePuzzleManager] Spheres green: {greenSpheresCount} / {allSpheres.Count}");
+            Debug.Log($"[SpherePuzzleManager] Spheres green: {greenSpheresCount} / {requiredSpheres}");
 
-            if (greenSpheresCount == allSpheres.Count && allSpheres.Count > 0)
+            if (greenSpheresCount >= requiredSpheres)
             {
                 CompletePuzzle();
             }
@@ -38,7 +44,12 @@ namespace MuseumGame.Puzzle
 
         private void CompletePuzzle()
         {
-            Debug.Log("[SpherePuzzleManager] All spheres are green! Returning to original scene.");
+            string currentScene = SceneManager.GetActiveScene().name.Trim();
+            Debug.Log($"[SpherePuzzleManager] All spheres are green! Marking puzzle as completed: '{currentScene}'");
+            
+            // Mark the current puzzle scene as completed in PlayerPrefs for bulletproof persistence
+            PlayerPrefs.SetInt("Completed_" + currentScene, 1);
+            PlayerPrefs.Save();
             
             // Trigger the scene change back to the original scene
             SceneManager.LoadScene(originalSceneName);

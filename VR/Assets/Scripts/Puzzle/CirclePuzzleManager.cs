@@ -21,6 +21,9 @@ public class CirclePuzzleManager : MonoBehaviour
 
     void Start()
     {
+        // Force to 5 to avoid Unity Inspector old saved values overriding it
+        totalCircles = 5;
+
         // Find ALL interactors, even if they are currently turned off by the simulator!
         var interactors = Resources.FindObjectsOfTypeAll<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
         foreach (var interactor in interactors)

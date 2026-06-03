@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR;
 using UnityEngine.InputSystem;
 
 namespace MuseumGame.Puzzle
@@ -8,7 +8,6 @@ namespace MuseumGame.Puzzle
     {
         [Header("Settings")]
         public Material greenMaterial;
-        public Key activationKey = Key.G;
         
         [Header("References")]
         public SpherePuzzleManager puzzleManager;
@@ -16,6 +15,7 @@ namespace MuseumGame.Puzzle
         
         private bool isGazedAt = false;
         private bool isAlreadyGreen = false;
+        private bool wasTriggerPressedLastFrame = false;
 
         void Start()
         {
@@ -29,8 +29,27 @@ namespace MuseumGame.Puzzle
 
         void Update()
         {
-            // If the player is looking at the sphere, hasn't activated it yet, and presses 'G'
-            if (isGazedAt && !isAlreadyGreen && Keyboard.current != null && Keyboard.current[activationKey].wasPressedThisFrame)
+            // Universal VR Trigger Check (Works for both left and right controllers without Inspector setup)
+            bool isTriggerPressed = false;
+            var devices = new System.Collections.Generic.List<UnityEngine.XR.InputDevice>();
+            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Controller, devices);
+            
+            foreach (var device in devices)
+            {
+                if (device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton, out bool triggerValue))
+                {
+                    if (triggerValue) isTriggerPressed = true;
+                }
+            }
+
+            bool triggerPressedThisFrame = isTriggerPressed && !wasTriggerPressedLastFrame;
+            wasTriggerPressedLastFrame = isTriggerPressed;
+
+            // Keyboard fallback just in case
+            bool keyboardFallback = Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame;
+
+            // If the player is looking at the sphere, hasn't activated it yet, and presses the VR Trigger
+            if (isGazedAt && !isAlreadyGreen && (triggerPressedThisFrame || keyboardFallback))
             {
                 TurnGreen();
             }
