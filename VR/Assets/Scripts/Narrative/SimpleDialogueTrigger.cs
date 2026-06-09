@@ -27,8 +27,8 @@ namespace MuseumGame.Narrative
         [Header("Look")]
         public bool autoResolveUiReferences = true;
         public bool autoStyleDialogue = true;
-        public string promptMessage = "Carrega [G] para continuar";
-        public string interactionHintMessage = "Carrega [G] para interagir";
+        public string promptMessage = "Usa o gatilho do comando para continuar";
+        public string interactionHintMessage = "Aponta o laser e usa o gatilho para interagir";
         public Color panelColor = new Color(0.06f, 0.08f, 0.12f, 0.88f);
         public Color speakerColor = new Color(0.96f, 0.84f, 0.56f, 1f);
         public Color bodyColor = new Color(0.96f, 0.97f, 0.98f, 1f);
@@ -82,7 +82,7 @@ namespace MuseumGame.Narrative
             interactable.selectEntered.AddListener(OnXRInteract);
         }
 
-        // Callback do XR — equivalente a premir E
+        // Callback do XR: laser ou toque direto no interactable.
         private void OnXRInteract(SelectEnterEventArgs args)
         {
             Debug.Log($"[SimpleDialogueTrigger] OnXRInteract triggered by VR Laser on {gameObject.name}!");

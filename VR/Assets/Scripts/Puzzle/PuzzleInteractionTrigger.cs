@@ -27,8 +27,8 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     [Header("UI Prompt")]
     public GameObject promptUI;
     public TextMeshProUGUI promptText;
-    public string enterText = "Press [H] / [G] or [B/Y] to inspect painting";
-    public string exitText = "Press [H] / [G] or [B/Y] to step back";
+    public string enterText = "Aponta para o quadro e usa o gatilho para ver melhor";
+    public string exitText = "Usa B/Y ou Menu para voltar";
     public bool autoCreatePromptUI = true;
 
     [Header("VR Prompt Placement")]

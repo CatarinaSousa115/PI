@@ -26,8 +26,8 @@ public class StatueController : MonoBehaviour
 
     [Header("HUD Feedback")]
     public bool showHudFeedback = true;
-    public string entranceStatus = "Aproxima-te da estatua e carrega no gatilho.";
-    public string minigameActiveStatus = "Ouve a pista e interage com os quadros na ordem correta.";
+    public string entranceStatus = "Aproxima-te da estatua e usa o gatilho do comando.";
+    public string minigameActiveStatus = "Ouve a pista, aponta para os quadros e usa o gatilho pela ordem certa.";
     public string returnToStatueStatus = "Volta a estatua para concluir a sala.";
     public string completeStatus = "Sala da estatua concluida.";
 

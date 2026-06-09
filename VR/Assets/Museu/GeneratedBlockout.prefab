@@ -10341,8 +10341,8 @@ MonoBehaviour:
   interactionHintText: {fileID: 0}
   autoResolveUiReferences: 1
   autoStyleDialogue: 1
-  promptMessage: Carrega [G] para continuar
-  interactionHintMessage: Carrega [G] para interagir
+  promptMessage: Usa o gatilho do comando para continuar
+  interactionHintMessage: Aponta o laser e usa o gatilho para interagir
   panelColor: {r: 0.06, g: 0.08, b: 0.12, a: 0.88}
   speakerColor: {r: 0.96, g: 0.84, b: 0.56, a: 1}
   bodyColor: {r: 0.96, g: 0.97, b: 0.98, a: 1}
@@ -10503,8 +10503,8 @@ MonoBehaviour:
   playerTag: Player
   promptUI: {fileID: 0}
   promptText: {fileID: 0}
-  enterText: Press [G] to inspect painting
-  exitText: Press [G] or [B/Y] to step back
+  enterText: Aponta para o quadro e usa o gatilho para ver melhor
+  exitText: Usa B/Y ou Menu para voltar
   puzzleManager: {fileID: 4761399603779622727}
   cameraController: {fileID: 382817572808315312}
   lockPlayerMovementWhilePuzzleOpen: 0
