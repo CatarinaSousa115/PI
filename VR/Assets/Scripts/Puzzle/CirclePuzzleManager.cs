@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class CirclePuzzleManager : MonoBehaviour
 {
     [Header("Puzzle Settings")]
-    public int totalCircles = 5;
+    public int totalCircles = 1;
     public string sceneToLoad = "BasicScene";
     
     private int activatedCount = 0;
@@ -21,8 +21,8 @@ public class CirclePuzzleManager : MonoBehaviour
 
     void Start()
     {
-        // Force to 5 to avoid Unity Inspector old saved values overriding it
-        totalCircles = 5;
+        // Force to 1 to avoid Unity Inspector old saved values overriding it
+        totalCircles = 1;
 
         // Find ALL interactors, even if they are currently turned off by the simulator!
         var interactors = Resources.FindObjectsOfTypeAll<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
@@ -51,36 +51,39 @@ public class CirclePuzzleManager : MonoBehaviour
             // Find the player
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             
-            // Try to find the Room 2 location markers from your project
-            GameObject room2Marker = GameObject.Find("Sala 2 - 1.2 Marker");
-            if (room2Marker == null) room2Marker = GameObject.Find("Sala 2 - 1.2/Sala 2 - 1.2 Marker");
-            if (room2Marker == null) room2Marker = GameObject.Find("Sala 2 - 1.2");
-            if (room2Marker == null)
+            // Try to find the Room 4 location markers from your project
+            GameObject room4Marker = GameObject.Find("Sala 4 - 1.5 Marker");
+            if (room4Marker == null) room4Marker = GameObject.Find("Sala 4 - 1.5/Sala 4 - 1.5 Marker");
+            if (room4Marker == null) room4Marker = GameObject.Find("Sala 4 - 1.5");
+            if (room4Marker == null)
             {
                 // Fallback: search all objects for the name
                 foreach (var obj in Resources.FindObjectsOfTypeAll<Transform>())
                 {
-                    if (obj.name.Contains("Sala 2") && obj.name.Contains("Marker") && obj.gameObject.scene.isLoaded)
+                    if (obj.name.Contains("Sala 4") && obj.name.Contains("Marker") && obj.gameObject.scene.isLoaded)
                     {
-                        room2Marker = obj.gameObject;
+                        room4Marker = obj.gameObject;
                         break;
                     }
                 }
             }
 
-            if (player != null && room2Marker != null)
+            if (player != null && room4Marker != null)
             {
-                Debug.Log("[CirclePuzzleManager] Teleporting player to Room 2!");
+                Debug.Log("[CirclePuzzleManager] Teleporting player to Room 4!");
                 
                 // Teleport the entire XR Origin
-                player.transform.position = room2Marker.transform.position;
+                player.transform.position = room4Marker.transform.position;
                 
-                // Add a slight height boost so they don't clip into the floor
-                player.transform.position += Vector3.up * 1.5f; 
+                // Set the orientation to match the marker's rotation
+                player.transform.rotation = room4Marker.transform.rotation;
+                
+                // Add a very slight height boost just to avoid clipping into the floor
+                player.transform.position += Vector3.up * 0.05f; 
             }
             else
             {
-                Debug.LogWarning("[CirclePuzzleManager] Could not find Player or Room 2 Marker to teleport!");
+                Debug.LogWarning("[CirclePuzzleManager] Could not find Player or Room 4 Marker to teleport!");
             }
         }
     }
@@ -94,7 +97,7 @@ public class CirclePuzzleManager : MonoBehaviour
         {
             Debug.Log("All circles activated! Teleporting...");
             
-            // Set the flag before loading so the next scene knows to teleport us to Room 2
+            // Set the flag before loading so the next scene knows to teleport us to Room 4
             justCompletedPuzzle = true;
             SceneManager.LoadScene(sceneToLoad);
         }
