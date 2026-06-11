@@ -57,7 +57,7 @@ namespace MuseumGame.Narrative
 
         [Header("Player Spawn")]
         public string playerName = "Player";
-        public float playerSpawnHeight = 1f;
+        public float playerSpawnHeight = 0f;
 
         [Header("Flow")]
         public bool resetProgressOnStart = true;
