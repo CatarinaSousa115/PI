@@ -28,9 +28,15 @@ namespace MuseumGame
         public float hudMaxDistance = 2.6f;
         public float hudRecenterCooldown = 0.45f;
 
+        [Header("Auto Hide")]
+        [SerializeField, Min(0f)] private float visibleDuration = 20f;
+
         private bool subscribed;
         private Canvas hudCanvas;
+        private CanvasGroup visibilityGroup;
         private float nextHudRecenterTime;
+        private float hideAtTime;
+        private bool hidden;
 
         public static MuseumHud EnsureExists()
         {
@@ -86,6 +92,9 @@ namespace MuseumGame
             }
 
             UpdateHudPlacement(false);
+
+            if (!hidden && visibleDuration > 0f && Time.unscaledTime >= hideAtTime)
+                SetHudVisible(false);
         }
 
         void OnDisable()
@@ -138,6 +147,8 @@ namespace MuseumGame
 
             if (objectiveText != null)
                 objectiveText.text = objective;
+
+            ShowHud();
         }
 
         void UpdatePlaques(int current, int total)
@@ -146,12 +157,16 @@ namespace MuseumGame
 
             if (plaqueCounterText != null)
                 plaqueCounterText.text = $"Progresso: {current}/{total} placas";
+
+            ShowHud();
         }
 
         void ShowFinishedMessage()
         {
             if (statusText != null)
                 statusText.text = finishedMessage;
+
+            ShowHud();
         }
 
         public void SetStatus(string message)
@@ -160,6 +175,8 @@ namespace MuseumGame
 
             if (statusText != null)
                 statusText.text = message;
+
+            ShowHud();
         }
 
         public void ClearStatus()
@@ -168,6 +185,8 @@ namespace MuseumGame
 
             if (statusText != null)
                 statusText.text = string.Empty;
+
+            ShowHud();
         }
 
         private void EnsureHudReferences()
@@ -211,6 +230,17 @@ namespace MuseumGame
             StyleHudText(plaqueCounterText, new Vector2(32f, -94f), new Vector2(410f, 34f), 18, FontStyle.Bold, new Color(1f, 0.86f, 0.48f, 1f));
             StyleStatusText(statusText);
             hudCanvas = canvas;
+            visibilityGroup = EnsureCanvasGroup(canvas.gameObject);
+            SetHudVisible(!hidden);
+        }
+
+        private CanvasGroup EnsureCanvasGroup(GameObject target)
+        {
+            CanvasGroup group = target.GetComponent<CanvasGroup>();
+            if (group == null)
+                group = target.AddComponent<CanvasGroup>();
+
+            return group;
         }
 
         private GameObject EnsurePanel(Transform canvasTransform, string preferredName, string legacyName)
@@ -392,6 +422,24 @@ namespace MuseumGame
             }
 
             VRUiPlacement.PlaceInFrontOfCamera(hudCanvas.transform, hudDistance, hudOffset, hudFollowSpeed, snap);
+        }
+
+        private void ShowHud()
+        {
+            hideAtTime = Time.unscaledTime + visibleDuration;
+            SetHudVisible(true);
+        }
+
+        private void SetHudVisible(bool visible)
+        {
+            hidden = !visible;
+
+            if (visibilityGroup == null)
+                return;
+
+            visibilityGroup.alpha = visible ? 1f : 0f;
+            visibilityGroup.interactable = visible;
+            visibilityGroup.blocksRaycasts = visible;
         }
 
         private bool ShouldRecenterHud()
