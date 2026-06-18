@@ -9429,6 +9429,10 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
+    - target: {fileID: 947143955188744903, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: clueAudio
+      value: 
+      objectReference: {fileID: 8300000, guid: 41cc1217374b8446b9d942e1d390749e, type: 3}
     - target: {fileID: 959082851676730867, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -9845,6 +9849,10 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
+    - target: {fileID: 4604939760803818321, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: clueAudio
+      value: 
+      objectReference: {fileID: 8300000, guid: 5bd661b978a1f402cbb8207b4fdb1635, type: 3}
     - target: {fileID: 4644624723694091486, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -9877,6 +9885,10 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
+    - target: {fileID: 4888218260150015847, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: clueAudio
+      value: 
+      objectReference: {fileID: 8300000, guid: dfd864f36c3984578a1f39f945cbc0b1, type: 3}
     - target: {fileID: 4965525763928210097, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -10125,6 +10137,10 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
+    - target: {fileID: 6962796868176241860, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
+      propertyPath: clueAudio
+      value: 
+      objectReference: {fileID: 8300000, guid: 72fc0ae2e539646c0bfae4b8f106c2d4, type: 3}
     - target: {fileID: 6962845243249469370, guid: 0e6f70b05c6384a048df644a2274d803, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -12007,7 +12023,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10ead3b7f3332e1d8aeabf28f3c1c4fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingInteractable
-  clueAudio: {fileID: 0}
+  clueAudio: {fileID: 8300000, guid: 01b95f17465e6407db1f43c9ee8b18b1, type: 3}
   minigameManager: {fileID: 1464159261}
   highlightMaterial: {fileID: 0}
   paintingRenderer: {fileID: 0}
@@ -20780,7 +20796,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10ead3b7f3332e1d8aeabf28f3c1c4fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingInteractable
-  clueAudio: {fileID: 0}
+  clueAudio: {fileID: 8300000, guid: 2873c80a203b845b0aba5eb9d57e23c3, type: 3}
   minigameManager: {fileID: 1464159261}
   highlightMaterial: {fileID: 0}
   paintingRenderer: {fileID: 0}
@@ -20796,7 +20812,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10ead3b7f3332e1d8aeabf28f3c1c4fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingInteractable
-  clueAudio: {fileID: 0}
+  clueAudio: {fileID: 8300000, guid: b6ad4c55f01cd45749419ead749c3b7e, type: 3}
   minigameManager: {fileID: 1464159261}
   highlightMaterial: {fileID: 0}
   paintingRenderer: {fileID: 0}
@@ -20812,7 +20828,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10ead3b7f3332e1d8aeabf28f3c1c4fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingInteractable
-  clueAudio: {fileID: 0}
+  clueAudio: {fileID: 8300000, guid: fb1d157e0493d4deab47dba52cf5aa91, type: 3}
   minigameManager: {fileID: 1464159261}
   highlightMaterial: {fileID: 0}
   paintingRenderer: {fileID: 0}
