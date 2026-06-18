@@ -28,9 +28,15 @@ namespace MuseumGame
         public float hudMaxDistance = 2.6f;
         public float hudRecenterCooldown = 0.45f;
 
+        [Header("Visibility")]
+        public float hudVisibleDuration = 20f;
+
         private bool subscribed;
         private Canvas hudCanvas;
+        private CanvasGroup hudCanvasGroup;
         private float nextHudRecenterTime;
+        private float nextHudHideTime = -1f;
+        private bool hudVisible = true;
 
         public static MuseumHud EnsureExists()
         {
@@ -52,6 +58,7 @@ namespace MuseumGame
 
             MuseumHud hud = hudObject.AddComponent<MuseumHud>();
             hud.EnsureHudReferences();
+            hud.ShowHud();
             hud.UpdateHudPlacement(true);
             return hud;
         }
@@ -72,6 +79,7 @@ namespace MuseumGame
             EnsureHudReferences();
             HookManager();
             RefreshImmediate();
+            ShowHud();
             UpdateHudPlacement(true);
         }
 
@@ -86,6 +94,7 @@ namespace MuseumGame
             }
 
             UpdateHudPlacement(false);
+            UpdateHudVisibility();
         }
 
         void OnDisable()
@@ -138,6 +147,8 @@ namespace MuseumGame
 
             if (objectiveText != null)
                 objectiveText.text = objective;
+
+            ShowHud();
         }
 
         void UpdatePlaques(int current, int total)
@@ -146,12 +157,18 @@ namespace MuseumGame
 
             if (plaqueCounterText != null)
                 plaqueCounterText.text = $"Progresso: {current}/{total} placas";
+
+            ShowHud();
         }
 
         void ShowFinishedMessage()
         {
+            EnsureHudReferences();
+
             if (statusText != null)
                 statusText.text = finishedMessage;
+
+            ShowHud();
         }
 
         public void SetStatus(string message)
@@ -160,6 +177,8 @@ namespace MuseumGame
 
             if (statusText != null)
                 statusText.text = message;
+
+            ShowHud();
         }
 
         public void ClearStatus()
@@ -168,6 +187,8 @@ namespace MuseumGame
 
             if (statusText != null)
                 statusText.text = string.Empty;
+
+            ShowHud();
         }
 
         private void EnsureHudReferences()
@@ -211,6 +232,56 @@ namespace MuseumGame
             StyleHudText(plaqueCounterText, new Vector2(32f, -94f), new Vector2(410f, 34f), 18, FontStyle.Bold, new Color(1f, 0.86f, 0.48f, 1f));
             StyleStatusText(statusText);
             hudCanvas = canvas;
+            EnsureHudVisibilityGroup();
+            ApplyHudVisibility();
+        }
+
+        private void ShowHud()
+        {
+            hudVisible = true;
+            ApplyHudVisibility();
+            nextHudHideTime = Application.isPlaying && hudVisibleDuration > 0f
+                ? Time.time + hudVisibleDuration
+                : -1f;
+        }
+
+        private void UpdateHudVisibility()
+        {
+            if (!Application.isPlaying || !hudVisible || hudVisibleDuration <= 0f || nextHudHideTime < 0f)
+                return;
+
+            if (Time.time < nextHudHideTime)
+                return;
+
+            hudVisible = false;
+            nextHudHideTime = -1f;
+            ApplyHudVisibility();
+        }
+
+        private void EnsureHudVisibilityGroup()
+        {
+            if (hudCanvas == null)
+                return;
+
+            hudCanvasGroup = hudCanvas.GetComponent<CanvasGroup>();
+            if (hudCanvasGroup == null)
+                hudCanvasGroup = hudCanvas.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        private void ApplyHudVisibility()
+        {
+            if (hudCanvasGroup == null)
+                EnsureHudVisibilityGroup();
+
+            if (hudCanvasGroup == null)
+                return;
+
+            float targetAlpha = hudVisible ? 1f : 0f;
+            if (!Mathf.Approximately(hudCanvasGroup.alpha, targetAlpha))
+                hudCanvasGroup.alpha = targetAlpha;
+
+            hudCanvasGroup.interactable = hudVisible;
+            hudCanvasGroup.blocksRaycasts = hudVisible;
         }
 
         private GameObject EnsurePanel(Transform canvasTransform, string preferredName, string legacyName)
