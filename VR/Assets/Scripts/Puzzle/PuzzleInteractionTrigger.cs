@@ -30,6 +30,7 @@ public class PuzzleInteractionTrigger : MonoBehaviour
     public string enterText = "Aponta para o quadro e usa o gatilho para ver melhor";
     public string exitText = "Usa B/Y ou Menu para voltar";
     public bool autoCreatePromptUI = true;
+    public bool showExitPromptWhilePuzzleOpen = false;
 
     [Header("VR Prompt Placement")]
     public bool keepPromptInFrontOfCamera = true;
@@ -155,7 +156,10 @@ public class PuzzleInteractionTrigger : MonoBehaviour
 
         puzzleManager?.EnterPuzzleMode();
 
-        ShowPrompt(exitText);
+        if (showExitPromptWhilePuzzleOpen)
+            ShowPrompt(exitText);
+        else
+            SetPromptVisible(false);
     }
 
     private void ClosePuzzle()

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -47,6 +48,7 @@ public class CirclePuzzleManager : MonoBehaviour
         if (justCompletedPuzzle && scene.name == "BasicScene")
         {
             justCompletedPuzzle = false; // Reset the flag
+            ScheduleOpenAllDoorLeaves();
             
             // Find the player
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -86,6 +88,56 @@ public class CirclePuzzleManager : MonoBehaviour
                 Debug.LogWarning("[CirclePuzzleManager] Could not find Player or Room 4 Marker to teleport!");
             }
         }
+    }
+
+    private static void ScheduleOpenAllDoorLeaves()
+    {
+        GameObject runnerObject = new GameObject("Room4DoorOpenRunner");
+        runnerObject.AddComponent<DoorOpenRunner>();
+    }
+
+    private sealed class DoorOpenRunner : MonoBehaviour
+    {
+        private IEnumerator Start()
+        {
+            yield return null;
+            OpenAllDoorLeaves();
+            Destroy(gameObject);
+        }
+    }
+
+    private static void OpenAllDoorLeaves()
+    {
+        int openedDoors = 0;
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+
+        foreach (Transform current in transforms)
+        {
+            if (current == null || !current.gameObject.scene.isLoaded || !IsDoorLeaf(current.name))
+                continue;
+
+            foreach (Renderer renderer in current.GetComponentsInChildren<Renderer>(true))
+            {
+                renderer.enabled = false;
+            }
+
+            foreach (Collider collider in current.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+            }
+
+            current.gameObject.SetActive(false);
+            openedDoors++;
+        }
+
+        Debug.Log($"[CirclePuzzleManager] Opened/deactivated all door leaves after Room 4 minigame: {openedDoors}");
+    }
+
+    private static bool IsDoorLeaf(string objectName)
+    {
+        return !string.IsNullOrWhiteSpace(objectName) &&
+               objectName.StartsWith("To ", System.StringComparison.Ordinal) &&
+               objectName.EndsWith("_Leaf", System.StringComparison.Ordinal);
     }
 
     public void OnCircleActivated()
