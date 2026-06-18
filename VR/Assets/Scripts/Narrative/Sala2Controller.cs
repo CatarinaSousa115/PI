@@ -91,6 +91,15 @@ namespace MuseumGame.Narrative
             // 3. HUD Feedback
             MuseumHud.EnsureExists()?.SetStatus(completionStatusMessage);
 
+            // 4. Lobby reward (unlock all pieces)
+            if (pieceDisplay != null)
+            {
+                pieceDisplay.UnlockPiece(5);
+                pieceDisplay.UnlockPiece(10);
+                pieceDisplay.UnlockPiece(15);
+                pieceDisplay.UnlockPiece(20);
+            }
+
             Debug.Log("[Sala2Controller] Room 2 fully complete. Passage to Room 3 unlocked.");
         }
 

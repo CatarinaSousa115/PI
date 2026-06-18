@@ -26,7 +26,73 @@ public class PieceDisplay : MonoBehaviour
         }
         // NÃO reinicializa — usa o que está no Inspector
 
+        // Inicializa o estado com base nos progressos guardados no MuseumGameManager
+        if (MuseumGame.MuseumGameManager.Instance != null)
+        {
+            InitializeFromGameManager();
+            MuseumGame.MuseumGameManager.Instance.RoomCompleted += OnRoomCompleted;
+        }
+
         GeneratePieces();
+    }
+
+    void OnDestroy()
+    {
+        if (MuseumGame.MuseumGameManager.Instance != null)
+        {
+            MuseumGame.MuseumGameManager.Instance.RoomCompleted -= OnRoomCompleted;
+        }
+    }
+
+    private void InitializeFromGameManager()
+    {
+        if (MuseumGame.MuseumGameManager.Instance.IsRoomComplete(MuseumGame.MuseumRoomId.Reconstruction))
+        {
+            piecesUnlocked[5] = true;
+            piecesUnlocked[10] = true;
+            piecesUnlocked[15] = true;
+            piecesUnlocked[20] = true;
+        }
+        else
+        {
+            if (MuseumGame.MuseumGameManager.Instance.IsRoomComplete(MuseumGame.MuseumRoomId.Conversations))
+                piecesUnlocked[10] = true;
+            if (MuseumGame.MuseumGameManager.Instance.IsRoomComplete(MuseumGame.MuseumRoomId.Lights))
+                piecesUnlocked[15] = true;
+            if (MuseumGame.MuseumGameManager.Instance.IsRoomComplete(MuseumGame.MuseumRoomId.Minigames))
+                piecesUnlocked[20] = true;
+        }
+    }
+
+    private void OnRoomCompleted(MuseumGame.MuseumRoomId roomId)
+    {
+        if (roomId == MuseumGame.MuseumRoomId.Reconstruction)
+        {
+            UnlockPiece(5);
+            UnlockPiece(10);
+            UnlockPiece(15);
+            UnlockPiece(20);
+        }
+        else
+        {
+            int index = MapRoomIdToPieceIndex(roomId);
+            if (index != -1)
+            {
+                UnlockPiece(index);
+            }
+        }
+    }
+
+    private int MapRoomIdToPieceIndex(MuseumGame.MuseumRoomId roomId)
+    {
+        switch (roomId)
+        {
+            case MuseumGame.MuseumRoomId.Reconstruction: return 5;
+            case MuseumGame.MuseumRoomId.Conversations: return 10;
+            case MuseumGame.MuseumRoomId.Lights: return 15;
+            case MuseumGame.MuseumRoomId.Minigames: return 20;
+            default: return -1;
+        }
     }
 
     void GeneratePieces()
@@ -53,8 +119,15 @@ public class PieceDisplay : MonoBehaviour
 
     public void UnlockPiece(int index)
     {
-        if (index < 0 || index >= spawnedPieces.Length) return;
+        if (spawnedPieces == null || index < 0 || index >= spawnedPieces.Length) return;
         piecesUnlocked[index] = true;
-        spawnedPieces[index].GetComponent<MeshRenderer>().material = materials[index];
+        if (spawnedPieces[index] != null)
+        {
+            var renderer = spawnedPieces[index].GetComponent<MeshRenderer>();
+            if (renderer != null && index < materials.Length)
+            {
+                renderer.material = materials[index];
+            }
+        }
     }
 }
