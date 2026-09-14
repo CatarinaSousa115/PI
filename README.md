@@ -14,13 +14,19 @@ O projeto recria em 3D algumas das salas do museu e integra diferentes desafios 
 
 - [Poster do projeto](PE29_ESCAPE_THE_MUSEUM_POSTER.pdf)
 
+## Download
+
+A versão Android da aplicação pode ser descarregada através do seguinte link:
+
+[Download do APK](https://drive.google.com/file/d/1TAANNyBBF_yvaf0mGMTIbh3g5I2UvCvx/view?usp=share_link)
+
 ## Sobre o projeto
 
 O objetivo do projeto é proporcionar uma experiência imersiva de exploração e interação com o património do MNSR através de realidade virtual.
 
 O utilizador percorre diferentes espaços do museu, interage com objetos e resolve desafios relacionados com as obras e elementos presentes em cada sala.
 
-A experiência foi desenvolvida para Meta Quest, utilizando o sistema de interação XR disponibilizado pelo Unity.
+A experiência foi desenvolvida e testada em dispositivos Meta Quest, utilizando OpenXR e o sistema de interação XR disponibilizado pelo Unity.
 
 ## Funcionalidades
 
@@ -49,13 +55,13 @@ A experiência foi desenvolvida para Meta Quest, utilizando o sistema de intera�
 
 A estrutura principal do projeto Unity encontra-se diretamente na raiz do repositório:
 
-```Plain text
+```text
 PI/
 ├── Assets/
-│ ├── Materials/
-│ ├── Scenes/
-│ ├── Scripts/
-│ ├── ...
+│   ├── Materials/
+│   ├── Scenes/
+│   ├── Scripts/
+│   ├── ...
 ├── Packages/
 ├── ProjectSettings/
 ├── UserSettings/
@@ -67,8 +73,8 @@ PI/
 
 As principais cenas do projeto incluem:
 
-- Lobby.unity — espaço inicial da experiência;
-- PaintingScene.unity — ambiente associado ao desafio da pintura.
+- `Lobby.unity` — espaço inicial da experiência;
+- `PaintingScene.unity` — ambiente associado ao desafio da pintura.
 
 ## Experiência
 
@@ -100,7 +106,7 @@ git lfs pull
 
 Abrir o projeto através do Unity Hub, selecionando a pasta raiz:
 
-```Plain text
+```text
 PI/
 ```
 
@@ -110,11 +116,13 @@ O Unity deverá reconhecer automaticamente a estrutura do projeto e importar os 
 
 Depois de abrir o projeto, selecionar a cena inicial através do Unity Editor e executar o projeto.
 
-Para utilizar a experiência em realidade virtual, é necessário ter um dispositivo Meta Quest devidamente configurado para desenvolvimento.
+Para utilizar a experiência em realidade virtual, é necessário ter um dispositivo compatível com as tecnologias utilizadas pelo projeto e devidamente configurado para desenvolvimento.
+
+O projeto foi desenvolvido e testado utilizando Meta Quest.
 
 ## Controlo e interação
 
-A experiência foi concebida para utilização com os controladores de realidade virtual do Meta Quest.
+A experiência foi concebida para utilização com controladores de realidade virtual.
 
 A movimentação utiliza um sistema de teletransporte, permitindo ao utilizador deslocar-se pelos ambientes sem necessidade de locomoção contínua.
 
@@ -135,7 +143,7 @@ O projeto foi desenvolvido no âmbito da unidade curricular de Projeto Integrado
 
 **Tutor:** António Fernando Vasconcelos Cunha Castro Coelho
 
-**Proponentes:** Maria van Zeller de Macedo de Oliveira e Sousa _&_ Mariana Oliveira Magalhães
+**Proponentes:** Maria van Zeller de Macedo de Oliveira e Sousa e Mariana Oliveira Magalhães
 
 ## Objetivos
 
