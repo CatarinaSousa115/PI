@@ -1,4 +1,0 @@
-repository "PI/PI@6872828985399@cloud"
-  path "/"
-    br "/main"
-    co "/main"
