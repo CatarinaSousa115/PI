@@ -1,47 +1,53 @@
 # Escape the Museum
 
-Escape the Museum é uma experiência de realidade virtual desenvolvida em Unity, inspirada no Museu Nacional Soares dos Reis (MNSR), no Porto.
+> Experiência de realidade virtual em Unity, inspirada no Museu Nacional Soares dos Reis (MNSR), no Porto.
 
-O projeto recria em 3D algumas das salas do museu e integra diferentes desafios e mini-jogos que o utilizador deve completar para progredir na experiência.
+## Autores
 
-## Demonstração
+| Nome                                 | E-Mail                   |
+| ------------------------------------ | ------------------------ |
+| Ana Catarina Monteiro de Sousa       | up202306419@edu.fe.up.pt |
+| Arthur Pessoa de Mello Teixeira      | up202300368@edu.fe.up.pt |
+| Gustavo Luis Gommans Aguiar Teixeira | up202304718@edu.fe.up.pt |
+| João Miguel Teixeira da Silva        | up202306429@edu.fe.up.pt |
 
-[![Escape the Museum — Demonstração](https://img.youtube.com/vi/wL8ZE0XOc0o/maxresdefault.jpg)](https://youtu.be/wL8ZE0XOc0o)
+**Tutor:** António Fernando Vasconcelos Cunha Castro Coelho
 
-## Documentação
+**Proponentes:** Maria van Zeller de Macedo de Oliveira e Sousa e Mariana Oliveira Magalhães
 
-- [Relatório do projeto](PE29_ESCAPE_THE_MUSEUM_RELATORIO.pdf)
+## Contexto Académico
 
-- [Poster do projeto](PE29_ESCAPE_THE_MUSEUM_POSTER.pdf)
+- **Unidade Curricular:** Projeto Integrador
+- **Instituição:** FEUP — Faculdade de Engenharia da Universidade do Porto
+- **Ano/Semestre:** 2025/2026 — 2.º semestre
+- **Nota obtida:** 19/20 (Trabalho (50%): 20.0 | Relatório (35%): 18.0 | Apresentação Final (15%): 18.7)
 
-## Download
+## Descrição
 
-A versão Android da aplicação pode ser descarregada através do seguinte link:
+Escape the Museum recria em 3D algumas das salas do Museu Nacional Soares dos Reis e integra diferentes desafios e mini-jogos que o utilizador deve completar para progredir na experiência.
 
-[Download do APK](https://drive.google.com/file/d/1TAANNyBBF_yvaf0mGMTIbh3g5I2UvCvx/view?usp=share_link)
-
-## Sobre o projeto
-
-O objetivo do projeto é proporcionar uma experiência imersiva de exploração e interação com o património do MNSR através de realidade virtual.
-
-O utilizador percorre diferentes espaços do museu, interage com objetos e resolve desafios relacionados com as obras e elementos presentes em cada sala.
+O objetivo é proporcionar uma experiência imersiva de exploração e interação com o património do MNSR através de realidade virtual: o utilizador percorre diferentes espaços do museu, interage com objetos e resolve desafios relacionados com as obras e elementos presentes em cada sala. Entre os elementos desenvolvidos encontram-se representações de figuras e obras associadas ao MNSR, incluindo uma representação de Luís de Camões e um desafio relacionado com a reconstrução de uma pintura.
 
 A experiência foi desenvolvida e testada em dispositivos Meta Quest, utilizando OpenXR e o sistema de interação XR disponibilizado pelo Unity.
 
-## Funcionalidades
+### Demonstração
 
-- Exploração de ambientes 3D inspirados no Museu Nacional Soares dos Reis;
-- Experiência de realidade virtual;
-- Sistema de locomoção por teletransporte;
-- Interação com objetos através dos controladores VR;
-- Diferentes salas e desafios;
-- Mini-jogos integrados nos espaços do museu;
-- Reconstrução e interação com elementos artísticos;
-- Puzzle de reconstrução de uma pintura;
-- Interação com personagens e elementos históricos;
-- Sistema de progressão através da resolução dos desafios.
+[![Escape the Museum — Demonstração](https://img.youtube.com/vi/wL8ZE0XOc0o/maxresdefault.jpg)](https://youtu.be/wL8ZE0XOc0o)
 
-## Tecnologias
+### Funcionalidades
+
+- Exploração de ambientes 3D inspirados no Museu Nacional Soares dos Reis
+- Experiência de realidade virtual
+- Sistema de locomoção por teletransporte
+- Interação com objetos através dos controladores VR
+- Diferentes salas e desafios
+- Mini-jogos integrados nos espaços do museu
+- Reconstrução e interação com elementos artísticos
+- Puzzle de reconstrução de uma pintura
+- Interação com personagens e elementos históricos
+- Sistema de progressão através da resolução dos desafios
+
+## Tecnologias Utilizadas
 
 - Unity 6
 - C#
@@ -51,9 +57,7 @@ A experiência foi desenvolvida e testada em dispositivos Meta Quest, utilizando
 - Git / Git LFS
 - Modelação e geração de conteúdos 3D
 
-## Estrutura do projeto
-
-A estrutura principal do projeto Unity encontra-se diretamente na raiz do repositório:
+## Estrutura do Projeto
 
 ```text
 PI/
@@ -71,22 +75,18 @@ PI/
 └── README.md
 ```
 
-As principais cenas do projeto incluem:
+Principais cenas do projeto:
 
-- `Lobby.unity` — espaço inicial da experiência;
-- `PaintingScene.unity` — ambiente associado ao desafio da pintura.
+- `Lobby.unity` — espaço inicial da experiência
+- `PaintingScene.unity` — ambiente associado ao desafio da pintura
 
-## Experiência
+## Requisitos
 
-A experiência começa no lobby, onde o utilizador pode iniciar a exploração do museu.
+- Unity 6, com os módulos necessários para desenvolvimento Android e realidade virtual
+- Git e Git LFS
+- Dispositivo compatível com realidade virtual para a experiência completa (testado em Meta Quest)
 
-Ao longo do percurso, o utilizador encontra diferentes salas com desafios específicos. A interação com os objetos e a resolução dos mini-jogos permitem avançar na experiência.
-
-Entre os elementos desenvolvidos encontram-se representações de figuras e obras associadas ao MNSR, incluindo uma representação de Luís de Camões e um desafio relacionado com a reconstrução de uma pintura.
-
-## Instalação
-
-Para abrir e executar o projeto é necessário ter o Unity 6 instalado, juntamente com os componentes necessários para desenvolvimento para Android e realidade virtual.
+## Como Compilar / Executar
 
 ### 1. Clonar o repositório
 
@@ -95,7 +95,7 @@ git clone git@github.com:CatarinaSousa115/PI.git
 cd PI
 ```
 
-Como o projeto utiliza Git LFS, é necessário garantir que o Git LFS está instalado e inicializado:
+Como o projeto utiliza Git LFS, é necessário garantir que está instalado e inicializado:
 
 ```bash
 git lfs install
@@ -104,57 +104,31 @@ git lfs pull
 
 ### 2. Abrir no Unity
 
-Abrir o projeto através do Unity Hub, selecionando a pasta raiz:
-
-```text
-PI/
-```
-
-O Unity deverá reconhecer automaticamente a estrutura do projeto e importar os recursos necessários.
+Abrir o projeto através do Unity Hub, selecionando a pasta raiz `PI/`. O Unity deverá reconhecer automaticamente a estrutura do projeto e importar os recursos necessários.
 
 ### 3. Executar
 
-Depois de abrir o projeto, selecionar a cena inicial através do Unity Editor e executar o projeto.
+Selecionar a cena inicial (`Lobby.unity`) no Unity Editor e executar o projeto.
 
-Para utilizar a experiência em realidade virtual, é necessário ter um dispositivo compatível com as tecnologias utilizadas pelo projeto e devidamente configurado para desenvolvimento.
+Para utilizar a experiência em realidade virtual, é necessário ter um dispositivo compatível devidamente configurado para desenvolvimento (o projeto foi desenvolvido e testado com Meta Quest).
 
-O projeto foi desenvolvido e testado utilizando Meta Quest.
+## Como Usar
 
-## Controlo e interação
+A experiência começa no lobby, onde o utilizador pode iniciar a exploração do museu. Ao longo do percurso, encontra diferentes salas com desafios específicos — a interação com os objetos e a resolução dos mini-jogos permitem avançar na experiência.
 
-A experiência foi concebida para utilização com controladores de realidade virtual.
+A movimentação utiliza um sistema de teletransporte, e a interação com os elementos da cena é feita através dos sistemas de interação do XR Interaction Toolkit, usando os controladores VR.
 
-A movimentação utiliza um sistema de teletransporte, permitindo ao utilizador deslocar-se pelos ambientes sem necessidade de locomoção contínua.
+## Download
 
-A interação com os elementos da cena é realizada através dos sistemas de interação do XR Interaction Toolkit.
+Versão Android da aplicação: [Download do APK](https://drive.google.com/file/d/1TAANNyBBF_yvaf0mGMTIbh3g5I2UvCvx/view?usp=share_link)
 
-## Desenvolvimento
+## Documentação
 
-O projeto foi desenvolvido no âmbito da unidade curricular de Projeto Integrador, tendo como objetivo explorar a utilização de tecnologias de realidade virtual na recriação e divulgação de património cultural.
+- [Relatório do projeto](PE29_ESCAPE_THE_MUSEUM_RELATORIO.pdf)
+- [Poster do projeto](PE29_ESCAPE_THE_MUSEUM_POSTER.pdf)
 
-### Equipa
+## Notas Adicionais
 
-- Ana Sousa
-- Arthur Teixeira
-- João Silva
-- Gustavo Teixeira
+O projeto explora a utilização de tecnologias de realidade virtual na recriação e divulgação do património cultural, procurando aproximar o utilizador do património do MNSR através de uma experiência interativa e orientada para a descoberta.
 
-### Orientação
-
-**Tutor:** António Fernando Vasconcelos Cunha Castro Coelho
-
-**Proponentes:** Maria van Zeller de Macedo de Oliveira e Sousa e Mariana Oliveira Magalhães
-
-## Objetivos
-
-O projeto pretende demonstrar o potencial da realidade virtual como ferramenta de exploração de espaços culturais, permitindo ao utilizador interagir com uma representação virtual do museu de uma forma imersiva.
-
-Para além da componente tecnológica, o projeto procura aproximar o utilizador do património cultural através de uma experiência interativa e orientada para a descoberta.
-
-## Repositório
-
-O código-fonte e os restantes recursos do projeto estão disponíveis no [repositório do projeto](https://github.com/CatarinaSousa115/PI).
-
-## Licença
-
-Projeto desenvolvido para fins académicos.
+Futuramente, pretende-se expandir o projeto de forma a abranger as restantes salas do museu, proporcionando uma experiência de exploração mais completa do MNSR.
